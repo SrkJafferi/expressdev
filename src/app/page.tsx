@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_AE",
-    url: "/",
+    url: "https://new.expressadvertising.ae/",
     siteName: "Express Advertising",
     title: HOME_TITLE,
     description: HOME_DESCRIPTION,
@@ -40,6 +40,7 @@ export const metadata: Metadata = {
         url: "/images/og/express-advertising-og.jpg",
         width: 1200,
         height: 630,
+        type: "image/jpeg",
         alt: "Express Advertising UAE — Printing, Signage and Brand Production",
       },
     ],

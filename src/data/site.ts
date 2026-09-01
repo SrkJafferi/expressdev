@@ -9,7 +9,7 @@ export const site = {
   tagline: "Advertising Solution",
   positioning:
     "A UAE printing, signage and brand production house — design, print, fabricate, install.",
-  url: "https://expressadvertising.ae",
+  url: "https://new.expressadvertising.ae",
   shopUrl: "https://shop.expressadvertising.ae/",
   mapsUrl: "https://maps.app.goo.gl/VxwNQiXKLSkMq9Qw8",
 } as const;
