@@ -1,11 +1,9 @@
 import Link from "next/link";
 import { site } from "@/data/site";
 import { SectionLabel } from "@/components/ui/SectionLabel";
-import { ArrowRight, WhatsAppIcon } from "@/components/ui/Icons";
+import { ArrowRight } from "@/components/ui/Icons";
 import { CmykTicks } from "@/components/ui/PrintMarks";
 import { Reveal } from "@/components/motion/Reveal";
-import { whatsappUrl } from "@/lib/whatsapp";
-import { cn } from "@/lib/cn";
 
 /* ── Custom line icons — circular outlined treatment per reference ────── */
 function BlueprintIcon({ className }: { className?: string }) {

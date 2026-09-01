@@ -143,8 +143,6 @@ export function ProductCatalogue() {
   const visible = expanded ? inCategory : inCategory.slice(0, INITIAL_VISIBLE);
   const hasMore = inCategory.length > INITIAL_VISIBLE;
 
-  const totalProducts = products.length;
-
   const checkScroll = () => {
     if (railRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = railRef.current;
