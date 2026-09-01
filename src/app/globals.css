@@ -73,7 +73,8 @@
 
   html {
     -webkit-text-size-adjust: 100%;
-    scroll-behavior: smooth;
+    /* Smooth scrolling is handled by Lenis (SmoothScroll provider).
+       Keep CSS scroll-behavior off to avoid double smoothing. */
   }
 
   body {
@@ -717,4 +718,89 @@
   .group:hover .cta-arrow-icon {
     transform: none;
   }
+}
+
+/* --------------------------------------------------------------------------
+   CUSTOM CURSOR — dark navy dot + ring, near-instant tracking
+   -------------------------------------------------------------------------- */
+.cursor-dot-inner {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #01030f;
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55);
+  transform-origin: center center;
+  transition:
+    width 150ms ease,
+    height 150ms ease,
+    opacity 150ms ease;
+}
+
+.cursor-ring-inner {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  border: 1.8px solid #01030f;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
+  transform-origin: center center;
+  transition:
+    width 150ms ease,
+    height 150ms ease,
+    border-color 150ms ease,
+    background-color 150ms ease,
+    opacity 150ms ease,
+    transform 150ms ease;
+}
+
+/* Links / buttons — ring expands with magenta accent, dot stays navy */
+.cursor-dot-inner.is-link {
+  width: 5px;
+  height: 5px;
+}
+.cursor-ring-inner.is-link {
+  width: 44px;
+  height: 44px;
+  border-color: var(--color-magenta);
+  background: rgba(236, 39, 144, 0.08);
+}
+
+/* Opt-in modes (data-cursor="view" | "drag") — light labelled ring so the
+   text stays readable on both light and dark sections */
+.cursor-ring-inner.is-mode {
+  width: 64px;
+  height: 64px;
+  border-color: #01030f;
+  background: rgba(255, 255, 255, 0.92);
+}
+.cursor-dot-inner.is-mode {
+  opacity: 0;
+}
+.cursor-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #01030f;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.cursor-ring-inner.is-mode .cursor-label {
+  opacity: 1;
+}
+
+/* Press feedback */
+.cursor-ring-inner.is-pressed {
+  transform: scale(0.85);
+}
+
+/* Hide the native cursor only while the custom cursor is active —
+   text fields keep their native caret/I-beam for selection UX. */
+body.custom-cursor-active,
+body.custom-cursor-active * {
+  cursor: none !important;
+}
+body.custom-cursor-active :is(input, textarea, select, [contenteditable="true"]) {
+  cursor: auto !important;
 }

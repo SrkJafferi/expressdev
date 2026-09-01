@@ -75,7 +75,7 @@ export function SelectedWork() {
               delay={(i % 2) * 0.08}
               className={spans[i % spans.length]}
             >
-              <Link href="/portfolio" className="group block">
+            <Link href="/portfolio" className="group block" data-cursor="view">
                 <div className="plate plate-zoom relative aspect-4/3 w-full">
                   <Image
                     src={w.image.src}

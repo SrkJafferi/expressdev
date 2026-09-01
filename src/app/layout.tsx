@@ -4,6 +4,8 @@ import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppDock } from "@/components/layout/WhatsAppDock";
+import { SmoothScroll } from "@/components/providers/SmoothScroll";
+import { CustomCursor } from "@/components/ui/CustomCursor";
 import { contact, site } from "@/data/site";
 
 /**
@@ -77,9 +79,11 @@ export default function RootLayout({
           Skip to content
         </a>
         <Header />
+        <SmoothScroll />
         <main id="main">{children}</main>
         <Footer />
         <WhatsAppDock />
+        <CustomCursor />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
