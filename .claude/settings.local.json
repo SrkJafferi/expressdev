@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls \"F:/xampp/htdocs/expressadvertising\" 2>&1 | head -50; echo \"---\"; ls \"F:/xampp/htdocs/\" 2>&1 | head -30)",
+      "Bash(npm -v)",
+      "Bash(git --version)",
+      "WebFetch(domain:expressadvertising.ae)",
+      "WebFetch(domain:safiz.pk)"
+    ]
+  }
+}

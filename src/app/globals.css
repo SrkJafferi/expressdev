@@ -1,0 +1,720 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   EXPRESS ADVERTISING — DESIGN TOKENS
+   Colour values sampled directly from the supplied brand logo:
+   navy #1b4d85 · charcoal #373536 · cyan #0099da / #01afef
+   magenta #ec2790 · yellow #fff112
+   Typography follows the Plus Jakarta Sans system (display + body, 300–800).
+   ========================================================================== */
+
+@theme {
+  /* Brand — exact logo values */
+  --color-navy-900: #10305a;
+  --color-navy-800: #163f6e;
+  --color-navy: #1b4d85;
+  --color-navy-600: #2a689f;
+  --color-navy-300: #a9c4dd;
+  --color-navy-100: #e7eff7;
+
+  --color-charcoal: #373536;
+  --color-cyan: #0099da;
+  --color-cyan-bright: #01afef;
+  --color-magenta: #ec2790;
+  --color-yellow: #fff112;
+
+  /* Canvas — light-first, paper-inspired */
+  --color-paper: #f7f6f3;
+  --color-paper-2: #efedE8;
+  --color-mist: #f1f3f5;
+  --color-mist-2: #e8ebee;
+  --color-surface: #ffffff;
+
+  /* Ink */
+  --color-ink: #191b1e;
+  --color-ink-2: #4a4d52;
+  --color-ink-3: #7b7f86;
+  --color-rule: #dedbd4;
+  --color-rule-strong: #c6c2b8;
+
+  /* Type */
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --tracking-display: -0.035em;
+  --tracking-tightest: -0.045em;
+  --tracking-label: 0.22em;
+  --tracking-label-wide: 0.32em;
+
+  /* Motion */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --dur-fast: 220ms;
+  --dur-base: 420ms;
+  --dur-slow: 780ms;
+
+  /* Radii — intentionally near-square, print-plate feel */
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+
+  /* Containers */
+  --spacing-gutter: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   BASE
+   -------------------------------------------------------------------------- */
+
+@layer base {
+  * {
+    border-color: var(--color-rule);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-feature-settings: "ss01", "cv01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background-color: var(--color-navy);
+    color: #fff;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-cyan);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   COMPONENT PRIMITIVES
+   -------------------------------------------------------------------------- */
+
+@layer components {
+  /* Layout ---------------------------------------------------------------- */
+  .shell {
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 2.5rem;
+    }
+  }
+  @media (min-width: 1280px) {
+    .shell {
+      padding-inline: 4rem;
+    }
+  }
+
+  .shell-wide {
+    width: 100%;
+    max-width: 120rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .shell-wide {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  /* Typography ------------------------------------------------------------ */
+  .display-xl {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.75rem, 8.2vw, 8.5rem);
+    line-height: 0.9;
+    letter-spacing: var(--tracking-tightest);
+  }
+
+  .display-lg {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2.25rem, 4.2vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: var(--tracking-display);
+  }
+
+  /* Hero-only heading scale — tuned ~5% below the previous hero scale;
+     glyph paint padding lives on the element. */
+  .display-hero {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(1.53rem, 2.82vw, 2.69rem);
+    line-height: 0.98;
+    letter-spacing: var(--tracking-display);
+  }
+  @media (min-width: 40rem) {
+    .display-hero {
+      font-size: clamp(1.84rem, 5.5vw, 5.71rem);
+      line-height: 0.9;
+      letter-spacing: var(--tracking-tightest);
+    }
+  }
+
+  .display-md {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.75rem, 3.2vw, 3rem);
+    line-height: 1.02;
+    letter-spacing: var(--tracking-display);
+  }
+
+  .display-sm {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.25rem, 1.8vw, 1.6rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .lede {
+    font-size: clamp(1rem, 1.15vw, 1.1875rem);
+    line-height: 1.6;
+    color: var(--color-ink-2);
+    font-weight: 400;
+    text-wrap: pretty;
+  }
+
+  .body-sm {
+    font-size: 0.9375rem;
+    line-height: 1.62;
+    color: var(--color-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* Section label — small caps, wide tracking (Safiz typography behaviour) */
+  .label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .label-wide {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-label-wide);
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  /* Buttons --------------------------------------------------------------- */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    padding: 0.9375rem 1.5rem;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 9999px;
+    transition:
+      background-color var(--dur-fast) var(--ease-out-expo),
+      color var(--dur-fast) var(--ease-out-expo),
+      border-color var(--dur-fast) var(--ease-out-expo),
+      transform var(--dur-fast) var(--ease-out-expo);
+    will-change: transform;
+    cursor: pointer;
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+
+  .btn-primary {
+    background-color: var(--color-navy);
+    color: #fff;
+    border: 1px solid var(--color-navy);
+  }
+  .btn-primary:hover {
+    background-color: var(--color-navy-900);
+    border-color: var(--color-navy-900);
+  }
+
+  .btn-outline {
+    background-color: transparent;
+    color: var(--color-ink);
+    border: 1px solid var(--color-rule-strong);
+  }
+  .btn-outline:hover {
+    border-color: var(--color-ink);
+    background-color: var(--color-surface);
+  }
+
+  .btn-whatsapp {
+    background-color: #128c7e;
+    color: #fff;
+    border: 1px solid #128c7e;
+  }
+  .btn-whatsapp:hover {
+    background-color: #0e6f64;
+    border-color: #0e6f64;
+  }
+
+  .btn-ghost-invert {
+    background-color: transparent;
+    color: #fff;
+    border: 1px solid rgb(255 255 255 / 0.28);
+  }
+  .btn-ghost-invert:hover {
+    background-color: #fff;
+    color: var(--color-navy-900);
+    border-color: #fff;
+  }
+
+  /* Gradient CTA — brand cyan → navy sweep with an animated hover shift. */
+  .btn-gradient {
+    color: #fff;
+    border: 1px solid transparent;
+    background-image: linear-gradient(
+      120deg,
+      var(--color-cyan) 0%,
+      var(--color-navy) 55%,
+      var(--color-magenta) 130%
+    );
+    background-size: 180% 100%;
+    background-position: 0% 50%;
+    box-shadow: 0 12px 30px -14px rgb(0 153 218 / 0.7);
+    transition:
+      background-position 380ms var(--ease-out-expo),
+      box-shadow 380ms var(--ease-out-expo),
+      transform var(--dur-fast) var(--ease-out-expo);
+  }
+  .btn-gradient:hover {
+    background-position: 100% 50%;
+    box-shadow: 0 16px 36px -12px rgb(236 39 144 / 0.55);
+  }
+
+  /* Quiet link with an animated underline ------------------------------- */
+  .link-quiet {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--color-ink-2);
+    transition: color var(--dur-fast) var(--ease-out-expo);
+  }
+  .link-quiet::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 1px;
+    width: 100%;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--dur-base) var(--ease-out-expo);
+  }
+  .link-quiet:hover {
+    color: var(--color-ink);
+  }
+  .link-quiet:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* Print-inspired details ---------------------------------------------- */
+  .rule-grid {
+    background-image:
+      linear-gradient(to right, var(--color-rule) 1px, transparent 1px);
+    background-size: 25% 100%;
+  }
+
+  .paper-tooth {
+    background-image: radial-gradient(
+      var(--color-rule-strong) 0.5px,
+      transparent 0.5px
+    );
+    background-size: 4px 4px;
+    opacity: 0.35;
+  }
+
+  .measure-ticks {
+    background-image: linear-gradient(
+      to right,
+      var(--color-rule-strong) 1px,
+      transparent 1px
+    );
+    background-size: 8px 100%;
+  }
+
+  /* Image treatment ------------------------------------------------------ */
+  .plate {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-xs);
+    background-color: var(--color-paper-2);
+  }
+  .plate img {
+    transition: transform var(--dur-slow) var(--ease-out-expo);
+  }
+  .plate-zoom:hover img {
+    transform: scale(1.04);
+  }
+
+  .duotone-navy {
+    filter: saturate(0.72) contrast(1.06);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .text-balance-tight {
+    text-wrap: balance;
+  }
+
+  /* Break an element out of its container to the full viewport width. */
+  .full-bleed {
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+  }
+
+  /* Standard vertical rhythm for major sections. */
+  .section-y {
+    padding-block: 5rem;
+  }
+  @media (min-width: 1024px) {
+    .section-y {
+      padding-block: 7.5rem;
+    }
+  }
+
+  /* Kicker number used in oversized editorial compositions. */
+  .kicker-num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(3rem, 7vw, 6rem);
+    line-height: 0.85;
+    letter-spacing: var(--tracking-tightest);
+  }
+
+  /* Subtle elevation used sparingly on light surfaces. */
+  .lift {
+    box-shadow: 0 24px 60px -40px rgba(16, 48, 90, 0.45);
+  }
+  .lift-strong {
+    box-shadow: 0 40px 90px -50px rgba(16, 48, 90, 0.6);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   HERO SLIDER
+   -------------------------------------------------------------------------- */
+
+@layer components {
+  .hero-overlay {
+    background:
+      linear-gradient(
+        105deg,
+        rgb(9 22 42 / 0.82) 0%,
+        rgb(9 22 42 / 0.55) 38%,
+        rgb(9 22 42 / 0.12) 72%,
+        rgb(9 22 42 / 0.35) 100%
+      );
+  }
+  .hero-vignette {
+    background: linear-gradient(
+      to top,
+      rgb(9 22 42 / 0.55) 0%,
+      transparent 40%
+    );
+  }
+  .hero-progress {
+    transform-origin: left;
+  }
+
+  /* Gradient hero heading — stays luminous over dark imagery */
+  .text-gradient-hero {
+    background-image: linear-gradient(
+      100deg,
+      #ffffff 0%,
+      #eaf6ff 34%,
+      #7cd4ff 66%,
+      #38b6ff 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Soft floating decorative orbs / marks on the hero */
+  .hero-float {
+    animation: hero-float 9s ease-in-out infinite;
+  }
+  .hero-float-slow {
+    animation: hero-float 14s ease-in-out infinite;
+  }
+}
+
+@keyframes hero-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -22px, 0) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-float,
+  .hero-float-slow {
+    animation: none;
+  }
+}
+
+/* Client logo marquee — seamless infinite slide, pauses on hover */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-slide 40s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee-slide {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* Service headline ticker / marquee — smooth hardware-accelerated infinite slide */
+.service-marquee {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  user-select: none;
+}
+.service-marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  will-change: transform;
+  animation: service-marquee-slide 32s linear infinite;
+}
+.service-marquee:hover .service-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes service-marquee-slide {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .service-marquee-track {
+    animation: none;
+  }
+  .service-marquee {
+    overflow-x: auto;
+  }
+}
+
+
+
+/* Abstract gradient canvas — layered soft radial washes over a light base.
+   Controlled richness: brand CMYK tints, heavily diffused, never noisy. */
+.abstract-gradient {
+  background-color: #f4f6f8;
+  background-image:
+    radial-gradient(42rem 42rem at 12% 8%, rgb(0 153 218 / 0.16), transparent 60%),
+    radial-gradient(38rem 38rem at 88% 18%, rgb(236 39 144 / 0.12), transparent 58%),
+    radial-gradient(46rem 46rem at 78% 92%, rgb(27 77 133 / 0.18), transparent 62%),
+    radial-gradient(30rem 30rem at 30% 82%, rgb(255 241 18 / 0.10), transparent 60%);
+}
+
+/* Slowly drifting gradient blobs layered behind the content. */
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+  opacity: 0.55;
+  will-change: transform;
+  animation: blob-drift 22s ease-in-out infinite;
+}
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  33% {
+    transform: translate3d(4%, -6%, 0) scale(1.12);
+  }
+  66% {
+    transform: translate3d(-5%, 4%, 0) scale(0.94);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blob {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   QUOTE SECTION — Production Brief Aesthetic
+   ========================================================================== */
+
+/* Stroke-draw animation for the directional arrow SVG */
+@keyframes quote-stroke-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+.quote-arrow-path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: quote-stroke-draw 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.4s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .quote-arrow-path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Fine grid-line pattern overlay for the form panel */
+.quote-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Crop mark corner decorations */
+.crop-mark {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 1;
+}
+.crop-mark::before,
+.crop-mark::after {
+  content: '';
+  position: absolute;
+  background: rgba(255,255,255,0.12);
+}
+.crop-mark::before {
+  width: 1px;
+  height: 20px;
+}
+.crop-mark::after {
+  width: 20px;
+  height: 1px;
+}
+.crop-tl { top: 16px; left: 16px; }
+.crop-tl::before { top: 0; left: 0; }
+.crop-tl::after  { top: 0; left: 0; }
+.crop-tr { top: 16px; right: 16px; }
+.crop-tr::before { top: 0; right: 0; }
+.crop-tr::after  { top: 0; right: 0; }
+.crop-bl { bottom: 16px; left: 16px; }
+.crop-bl::before { bottom: 0; left: 0; }
+.crop-bl::after  { bottom: 0; left: 0; }
+.crop-br { bottom: 16px; right: 16px; }
+.crop-br::before { bottom: 0; right: 0; }
+.crop-br::after  { bottom: 0; right: 0; }
+
+/* Registration dots */
+.reg-dots {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.reg-dots span {
+  display: block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+/* Quote input with icon */
+.quote-input-group {
+  position: relative;
+}
+.quote-input-group .qi-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: rgba(255,255,255,0.3);
+  width: 16px;
+  height: 16px;
+}
+.quote-input-group input {
+  padding-left: 38px;
+}
+
+/* CTA arrow hover animation */
+.cta-arrow-icon {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .cta-arrow-icon {
+  transform: translateX(4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .cta-arrow-icon {
+    transform: none;
+  }
+}
