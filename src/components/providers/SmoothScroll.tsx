@@ -23,6 +23,20 @@ export function SmoothScroll() {
     let raf: ((time: number) => void) | undefined;
     let onClick: ((e: MouseEvent) => void) | undefined;
     let destroyed = false;
+    // Set once GSAP/ScrollTrigger finish loading inside the async boot.
+    let st: { refresh: () => void } | undefined;
+    // Page loader coordination — stop Lenis while the initial loader shows.
+    let loaderStopPending = false;
+    const onLoaderStart = () => {
+      loaderStopPending = true;
+      lenis?.stop();
+    };
+    const onLoaderEnd = () => {
+      loaderStopPending = false;
+      lenis?.start();
+      // Layout settled after the overlay exits — re-measure triggers.
+      st?.refresh();
+    };
 
     (async () => {
       const [{ default: LenisCtor }, { gsap }, { ScrollTrigger }] =
@@ -32,6 +46,7 @@ export function SmoothScroll() {
           import("gsap/ScrollTrigger"),
         ]);
       if (destroyed) return;
+      st = ScrollTrigger;
 
       lenis = new LenisCtor({
         duration: 0.95,
@@ -40,6 +55,9 @@ export function SmoothScroll() {
         touchMultiplier: 1,
         lerp: 0.12,
       });
+
+      // If the loader appeared before Lenis finished initialising, honour it.
+      if (loaderStopPending) lenis.stop();
 
       // Keep ScrollTrigger in sync with Lenis-driven scroll position.
       lenis.on("scroll", ScrollTrigger.update);
@@ -64,11 +82,16 @@ export function SmoothScroll() {
       };
       document.addEventListener("click", onClick);
 
+      window.addEventListener("ea:loader-start", onLoaderStart);
+      window.addEventListener("ea:loader-end", onLoaderEnd);
+
       ScrollTrigger.refresh();
     })();
 
     return () => {
       destroyed = true;
+      window.removeEventListener("ea:loader-start", onLoaderStart);
+      window.removeEventListener("ea:loader-end", onLoaderEnd);
       const ticker = raf;
       if (ticker) {
         import("gsap").then(({ gsap }) => gsap.ticker.remove(ticker));

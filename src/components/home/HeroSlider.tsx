@@ -54,18 +54,22 @@ export function HeroSlider() {
       onBlurCapture={() => setPaused(false)}
     >
       <div className="relative h-[86svh] min-h-[560px] w-full lg:h-[88svh]">
-        {/* Slides — crossfade with a slow ken-burns scale */}
+        {/* Slides — crossfade with a slow ken-burns scale.
+            initial={false}: the first slide paints fully visible immediately
+            (no dark start), transitions for later slides are unchanged. */}
         <AnimatePresence initial={false}>
           <motion.div
             key={slide.id}
-            initial={reduced ? { opacity: 1 } : { opacity: 0 }}
+            initial={reduced || index === 0 ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={reduced ? { opacity: 0 } : { opacity: 0 }}
             transition={{ duration: reduced ? 0 : 1.1, ease: [0.16, 1, 0.3, 1] }}
             className="absolute inset-0"
           >
             <motion.div
-              initial={reduced ? { scale: 1 } : { scale: 1.08 }}
+              initial={
+                reduced || index === 0 ? { scale: 1 } : { scale: 1.08 }
+              }
               animate={{ scale: 1 }}
               transition={{ duration: reduced ? 0 : 7, ease: "linear" }}
               className="absolute inset-0"
@@ -75,6 +79,7 @@ export function HeroSlider() {
                 alt={slide.image.alt}
                 fill
                 priority={index === 0}
+                data-hero-primary={index === 0 ? "true" : undefined}
                 sizes="100vw"
                 className="object-cover"
               />
@@ -104,7 +109,11 @@ export function HeroSlider() {
         <div className="relative z-20 flex h-full items-end pb-16 lg:items-center lg:pb-0">
           <div className="shell w-full">
             <div>
-              <AnimatePresence mode="wait">
+              {/* initial={false}: slide 1 content is fully visible on SSR
+                  paint and stays mounted through hydration — no entrance
+                  replay / disappearing flash on mount (incl. StrictMode).
+                  Later slide changes still crossfade normally. */}
+              <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={slide.id}
                   initial={reduced ? { opacity: 1 } : { opacity: 0, y: 24 }}

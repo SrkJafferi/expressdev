@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppDock } from "@/components/layout/WhatsAppDock";
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
+import { InitialPageLoader } from "@/components/providers/InitialPageLoader";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { contact, site } from "@/data/site";
 
@@ -46,6 +47,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#1b4d85",
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
 };
@@ -70,7 +72,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={jakarta.variable}>
+    <html lang="en" className={jakarta.variable} style={{ background: "#10305a" }}>
       <body>
         <a
           href="#main"
@@ -84,6 +86,7 @@ export default function RootLayout({
         <Footer />
         <WhatsAppDock />
         <CustomCursor />
+        <InitialPageLoader />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
