@@ -8,7 +8,7 @@ const stages = [
     label: "DESIGN",
     caption: "Artwork & layout",
     icon: (
-      <svg className="size-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="size-8" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="m13 2 5 5-9.5 9.5L3 18l1.5-5.5z" />
         <path d="m12 3 5 5" />
       </svg>
@@ -18,7 +18,7 @@ const stages = [
     label: "PRE-PRESS",
     caption: "Proof & plates",
     icon: (
-      <svg className="size-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="size-8" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3.5" y="3.5" width="13" height="13" rx="1.5" />
         <path d="M6.5 7h7M6.5 10h7M6.5 13h4" />
       </svg>
@@ -28,7 +28,7 @@ const stages = [
     label: "PRINT",
     caption: "Colour-managed run",
     icon: (
-      <svg className="size-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="size-8" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5.5 7V3h9v4" />
         <rect x="3.5" y="7" width="13" height="7" rx="1.5" />
         <path d="M5.5 12v5h9v-5" />
@@ -40,7 +40,7 @@ const stages = [
     label: "FINISH",
     caption: "Laminate · Foil · Cut",
     icon: (
-      <svg className="size-[18px]" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg className="size-8" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="5.5" cy="5.5" r="2" />
         <circle cx="5.5" cy="14.5" r="2" />
         <path d="M7 7l10 10M7 13 17 3" />
@@ -122,7 +122,7 @@ export function PrintShowcase() {
                 {/* Connecting dashed route — aligned to icon centres, draws on load */}
                 <svg
                   aria-hidden
-                  className="absolute left-2 right-2 top-5 h-0.5 w-[calc(100%-1rem)]"
+                  className="absolute left-2 right-2 top-8 h-0.5 w-[calc(100%-1rem)]"
                   viewBox="0 0 400 2"
                   fill="none"
                   preserveAspectRatio="none"
@@ -144,7 +144,7 @@ export function PrintShowcase() {
                       className="flex w-1/4 flex-col items-center gap-2.5"
                     >
                       <span
-                        className={`relative z-10 grid size-11 place-items-center rounded-full border-2 bg-surface shadow-[0_4px_12px_-4px_rgba(16,48,90,0.2)] transition-colors duration-300 ${
+                        className={`relative z-10 grid size-16 place-items-center rounded-full border-2 bg-surface shadow-[0_4px_12px_-4px_rgba(16,48,90,0.2)] transition-colors duration-300 ${
                           i === 0
                             ? "border-cyan text-cyan-bright"
                             : "border-cyan/40 text-cyan/60"

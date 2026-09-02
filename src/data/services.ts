@@ -25,6 +25,7 @@ export type Service = {
  */
 const servicePages: Partial<Record<string, string>> = {
   "printing-services": "/service-printing-services",
+  "large-format-printing": "/service-large-format-printing",
 };
 
 /** Clean URL for a service — dedicated page when available, anchor otherwise. */
