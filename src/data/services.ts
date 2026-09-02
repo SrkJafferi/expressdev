@@ -18,6 +18,20 @@ export type Service = {
   span: "wide" | "tall" | "standard";
 };
 
+/**
+ * Services that have dedicated landing pages. Links route to the real page
+ * URL instead of a homepage anchor, so navigation never produces a
+ * "/#section" address. Add a slug here as new service pages go live.
+ */
+const servicePages: Partial<Record<string, string>> = {
+  "printing-services": "/service-printing-services",
+};
+
+/** Clean URL for a service — dedicated page when available, anchor otherwise. */
+export function serviceHref(slug: string): string {
+  return servicePages[slug] ?? `/#service-${slug}`;
+}
+
 export const services: Service[] = [
   {
     slug: "printing-services",

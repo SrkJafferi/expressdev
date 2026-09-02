@@ -28,7 +28,7 @@ export function ClientMarquee() {
   ];
 
   return (
-    <section className="bg-paper-2 py-16 lg:py-20" aria-label="Our UAE clients">
+    <section id="clients" className="scroll-mt-24 bg-paper-2 py-16 lg:py-20" aria-label="Our UAE clients">
       <div className="shell">
         <Reveal from="up" className="flex flex-col items-center text-center">
           <SectionLabel accent="cyan">Trusted across the UAE</SectionLabel>

@@ -1,10 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { processStages } from "@/data/services";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { CropMarks } from "@/components/ui/PrintMarks";
+
+/**
+ * useLayoutEffect on the client, useEffect during SSR — avoids the
+ * "useLayoutEffect does nothing on the server" warning while keeping the
+ * guarantee we need below: on unmount, cleanup runs BEFORE React removes
+ * DOM nodes.
+ */
+const useIsoLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 /**
  * SIGNATURE INTERACTION — vertical scroll drives horizontal movement.
@@ -21,7 +30,7 @@ export function ProcessScroll() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  useIsoLayoutEffect(() => {
     const section = sectionRef.current;
     const track = trackRef.current;
     if (!section || !track) return;
@@ -30,8 +39,9 @@ export function ProcessScroll() {
     const mqReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (!mqDesktop.matches || mqReduced.matches) return;
 
-    let cleanup: (() => void) | undefined;
     let cancelled = false;
+    // Minimal structural type — gsap stays a dynamic import.
+    let ctx: { revert: () => void } | undefined;
 
     (async () => {
       const [{ gsap }, { ScrollTrigger }] = await Promise.all([
@@ -42,10 +52,13 @@ export function ProcessScroll() {
 
       gsap.registerPlugin(ScrollTrigger);
 
-      const ctx = gsap.context(() => {
+      // Scoped context: every tween/trigger created here is owned by this
+      // section. ctx.revert() kills them ALL and restores the DOM — including
+      // unwrapping the pin-spacer ScrollTrigger wraps the section in.
+      ctx = gsap.context(() => {
         const distance = () => track.scrollWidth - window.innerWidth;
 
-        const tween = gsap.to(track, {
+        gsap.to(track, {
           x: () => -distance(),
           ease: "none",
           scrollTrigger: {
@@ -70,19 +83,15 @@ export function ProcessScroll() {
             scrub: true,
           },
         });
-
-        return () => {
-          tween.scrollTrigger?.kill();
-          tween.kill();
-        };
       }, section);
-
-      cleanup = () => ctx.revert();
     })();
 
     return () => {
       cancelled = true;
-      cleanup?.();
+      // Layout-effect cleanup runs synchronously BEFORE React removes the
+      // section's DOM nodes, so the pin-spacer is unwrapped in time and
+      // React's removeChild calls see the structure it expects.
+      ctx?.revert();
     };
   }, []);
 

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { nav, contact, site } from "@/data/site";
-import { services } from "@/data/services";
+import { services, serviceHref } from "@/data/services";
 import { Logo } from "@/components/ui/Logo";
 import { QuoteButton } from "@/components/ui/Cta";
 import { ArrowUpRight, WhatsAppIcon } from "@/components/ui/Icons";
@@ -118,12 +118,22 @@ export function Header() {
             >
               {nav.map((item) => (
                 <div key={item.href} className="group relative">
-                  <Link
-                    href={item.href}
-                    className="relative block rounded-full px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase transition-all duration-200 hover:bg-white/15 hover:text-cyan-bright"
-                  >
-                    {item.label}
-                  </Link>
+                  {item.label === "Services" ? (
+                    // Services — dropdown-only trigger (no page navigation)
+                    <button
+                      type="button"
+                      className="block cursor-default rounded-full px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase"
+                    >
+                      {item.label}
+                    </button>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      className="relative block rounded-full px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase transition-all duration-200 hover:bg-white/15 hover:text-cyan-bright"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
 
                   {item.label === "Services" && (
                     <div className="invisible absolute left-1/2 top-full z-50 w-[min(70vw,680px)] -translate-x-1/2 pt-5 opacity-0 transition-all duration-300 ease-[var(--ease-out-expo)] group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
@@ -133,12 +143,9 @@ export function Header() {
                           {services.map((s) => (
                             <li key={s.slug}>
                               <Link
-                                href={`/#service-${s.slug}`}
-                                className="group/i flex items-baseline gap-3 border-b border-white/10 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-cyan-bright"
+                                href={serviceHref(s.slug)}
+                                className="group/i flex items-center border-b border-white/10 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-cyan-bright"
                               >
-                                <span className="label-wide w-5 shrink-0 text-white/40 group-hover/i:text-cyan-bright">
-                                  {s.index}
-                                </span>
                                 <span className="flex-1">{s.title}</span>
                               </Link>
                             </li>
@@ -241,13 +248,20 @@ export function Header() {
           <ul className="border-t border-rule">
             {nav.map((item) => (
               <li key={item.href} className="border-b border-rule">
-                <Link
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className="display-sm block py-5"
-                >
-                  {item.label}
-                </Link>
+                {item.label === "Services" ? (
+                  // Services — dropdown-only on desktop; capabilities listed below
+                  <span className="display-sm block py-5 text-ink-3">
+                    {item.label}
+                  </span>
+                ) : (
+                  <Link
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="display-sm block py-5"
+                  >
+                    {item.label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -257,11 +271,10 @@ export function Header() {
             {services.map((s) => (
               <li key={s.slug} className="border-b border-rule/70">
                 <Link
-                  href={`/#service-${s.slug}`}
+                  href={serviceHref(s.slug)}
                   onClick={() => setOpen(false)}
-                  className="flex items-baseline gap-3 py-3 text-sm font-medium"
+                  className="flex items-center py-3 text-sm font-medium"
                 >
-                  <span className="label-wide w-5 text-ink-3">{s.index}</span>
                   {s.title}
                 </Link>
               </li>

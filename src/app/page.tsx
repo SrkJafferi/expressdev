@@ -4,6 +4,7 @@ import { ServiceMarquee } from "@/components/home/ServiceMarquee";
 import { CapabilityStrip } from "@/components/home/CapabilityStrip";
 import { FeatureTriad } from "@/components/home/FeatureTriad";
 import { ServicesShowcase } from "@/components/home/ServicesShowcase";
+import { BrandConsistency } from "@/components/home/BrandConsistency";
 import { ProcessScroll } from "@/components/home/ProcessScroll";
 import { ProductCatalogue } from "@/components/home/ProductCatalogue";
 import { WhyUs } from "@/components/home/WhyUs";
@@ -61,6 +62,7 @@ export default function HomePage() {
       <CapabilityStrip />
       <FeatureTriad />
       <ServicesShowcase />
+      <BrandConsistency />
       <ProcessScroll />
       <ProductCatalogue />
       <WhyUs />

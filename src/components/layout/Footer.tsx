@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { nav, site } from "@/data/site";
-import { services } from "@/data/services";
+import { services, serviceHref } from "@/data/services";
 import { ArrowUpRight } from "@/components/ui/Icons";
 import { CmykTicks } from "@/components/ui/PrintMarks";
 import { NewsletterForm } from "@/components/layout/NewsletterForm";
@@ -45,7 +45,7 @@ const navIcons: Record<string, IconType> = {
   "/": HomeIcon,
   "/about": AboutIcon,
   "/services": GridIcon,
-  "/portfolio": ImageIcon,
+  "/#clients": ImageIcon,
   "/contact": ContactIcon,
 };
 
@@ -167,7 +167,7 @@ export function Footer() {
                 return (
                   <li key={s.slug}>
                     <Link
-                      href={`/#service-${s.slug}`}
+                      href={serviceHref(s.slug)}
                       className="group flex items-center gap-2.5 py-1.5 text-sm text-ink-2 transition-colors hover:text-navy-900"
                     >
                       {Icon && (

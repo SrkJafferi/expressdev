@@ -7,14 +7,22 @@ import { cn } from "@/lib/cn";
 /**
  * Initial page loader — real readiness milestones only, no fake timers.
  *
+ * - Runs for the browser's INITIAL document load only. Once its readiness
+ *   cycle finishes, a module-level flag permanently disables it for the rest
+ *   of the SPA session — client-side navigation (/ → /about → / …) can never
+ *   replay it, even if the component remounts.
  * - Reveals ONLY if the page is still not ready after REVEAL_THRESHOLD ms
  *   (fast/cached loads never see it).
  * - Progress = actual milestones: mounted 25% → fonts 50% → first hero
  *   image 80% → ready 100%. Smooth scaleX between milestones.
- * - Hero image error/timeout never traps the visitor — page always opens.
+ * - The first-hero-image milestone applies ONLY when a primary hero image
+ *   actually exists in the document (homepage hard load). On routes without
+ *   one (e.g. direct hard load of /about) the milestone completes immediately.
+ * - If navigation removes the tracked hero mid-load, the cycle completes
+ *   right away instead of stalling until timeout.
  * - Scroll is locked only while the loader is actually visible; Lenis is
  *   stopped/started via SmoothScroll's ea:loader-* events.
- * - Lives in the root layout, so client-side navigation never replays it.
+ * - Lives in the root layout, so it mounts exactly once per document.
  */
 type Phase = "checking" | "visible" | "exiting" | "done";
 
@@ -23,6 +31,18 @@ const FONTS_TIMEOUT = 3000; // ms — never wait longer than this for fonts
 const HERO_TIMEOUT = 4000; // ms — never wait longer than this for the hero
 const EXIT_BEAT = 120; // ms — perceptible 100% beat before exit
 const EXIT_MS = 450; // ms — overlay exit duration
+
+/**
+ * Initial-load-only guard, module scope so it SURVIVES component remounts
+ * (React error-boundary recovery, dev hot reload) but resets on a genuine
+ * browser reload — exactly the lifetime the guard needs.
+ *
+ * StrictMode-safe: dev double-invoke re-runs the effect synchronously before
+ * any async milestone (fonts/hero) can resolve, so only the SECOND effect run
+ * can ever reach finish() and set this flag — the first run's closure is
+ * always disposed by then.
+ */
+let initialLoadHandled = false;
 
 export function InitialPageLoader() {
   const [phase, setPhase] = useState<Phase>("checking");
@@ -34,6 +54,14 @@ export function InitialPageLoader() {
   const shownRef = useRef(false);
 
   useEffect(() => {
+    // Session guard: the initial document load already completed its cycle.
+    // This mount belongs to a client-side route transition or a remount —
+    // permanently disable the full-screen loader for this SPA session.
+    if (initialLoadHandled) {
+      setPhase("done");
+      return;
+    }
+
     let disposed = false;
     let fontsReady = false;
     let heroReady = false;
@@ -51,6 +79,8 @@ export function InitialPageLoader() {
     const finish = () => {
       if (finished || disposed) return;
       finished = true;
+      // The one readiness cycle of this SPA session is done — never again.
+      initialLoadHandled = true;
       // Never revealed → finish silently. No overlay, no events, no exit.
       if (!shownRef.current) return;
       setProgress(100);
@@ -99,7 +129,11 @@ export function InitialPageLoader() {
       maybeFinish();
     });
 
-    // Milestone 3 — FIRST hero image (eager, above the fold) only.
+    // Milestone 3 — FIRST hero image (eager, above the fold), and ONLY if a
+    // primary hero image actually exists in this document. On routes without
+    // one (e.g. a direct hard load of /about) this milestone completes
+    // immediately — absence of a homepage hero must not keep the loader
+    // pending until timeout.
     let heroEl: HTMLImageElement | null = null;
     const onHeroDone = () => {
       if (heroReady || finished || disposed) return;
@@ -113,7 +147,7 @@ export function InitialPageLoader() {
       const img = document.querySelector<HTMLImageElement>(
         "img[data-hero-primary]",
       );
-      if (!img) return;
+      if (!img) return false;
       heroEl = img;
       if (img.complete && img.naturalWidth > 0) {
         onHeroDone();
@@ -121,13 +155,28 @@ export function InitialPageLoader() {
         img.addEventListener("load", onHeroDone, { once: true });
         img.addEventListener("error", onHeroDone, { once: true });
       }
+      return true;
     };
-    findHero();
-    // Safety net: if the hero element is missing or stalls, don't trap.
+
+    if (!findHero()) {
+      heroReady = true;
+      setProgress(80);
+      maybeFinish();
+    }
+
+    // Safety nets: stalled hero, or the tracked hero leaving the document —
+    // which is what a client-side navigation looks like while the cycle is
+    // still running. In both cases complete NOW instead of stalling.
     const heroTimer = window.setTimeout(onHeroDone, HERO_TIMEOUT);
     const heroPoll = window.setInterval(() => {
       if (heroReady || finished || disposed) {
         window.clearInterval(heroPoll);
+        return;
+      }
+      // Navigation happened underneath the loader — the hero element we were
+      // waiting for is gone from the document. Nothing left to wait for.
+      if (heroEl && !heroEl.isConnected) {
+        onHeroDone();
         return;
       }
       if (!heroEl) findHero();

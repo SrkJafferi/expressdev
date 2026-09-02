@@ -493,6 +493,21 @@
     -webkit-text-fill-color: transparent;
   }
 
+  /* Gradient heading variant for light surfaces — navy → cyan → magenta */
+  .text-gradient-deep {
+    background-image: linear-gradient(
+      100deg,
+      var(--color-navy-900) 0%,
+      var(--color-navy) 40%,
+      var(--color-cyan) 78%,
+      var(--color-magenta) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
   /* Soft floating decorative orbs / marks on the hero */
   .hero-float {
     animation: hero-float 9s ease-in-out infinite;
@@ -875,7 +890,28 @@ html.page-loader-lock {
   transition: transform 450ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* --------------------------------------------------------------------------
+   SERVICE PAGE — SVG production-route line draw
+   -------------------------------------------------------------------------- */
+.route-line {
+  stroke-dasharray: 6 5;
+  stroke-dashoffset: 0;
+  animation: route-draw 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes route-draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .route-line {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
   .loader-overlay {
     animation: none;
     opacity: 1;
