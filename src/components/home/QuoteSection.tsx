@@ -402,14 +402,15 @@ export function QuoteSection() {
           </div>
 
           {/* ── RIGHT PRODUCTION BRIEF PANEL ───────────────────────── */}
-          <div className="flex flex-col lg:col-span-8">
-            <div className="quote-grid-bg relative flex h-full flex-col justify-between rounded-xl border border-white/[0.08] bg-navy-800/50 p-6 sm:p-8 lg:p-10">
+          <div className="flex min-w-0 flex-col lg:col-span-8">
+            <div className="quote-grid-bg relative flex h-full min-w-0 flex-col justify-between rounded-xl border border-white/[0.08] bg-navy-800/50 p-6 sm:p-8 lg:p-10">
 
               <div>
-                {/* 01 — Capability */}
-                <fieldset>
+                {/* 01 — Capability — mobile: single-column grid so long
+                    labels wrap instead of forcing the viewport wider */}
+                <fieldset className="min-w-0">
                   <legend className="label-wide text-[#ededed]">Capability</legend>
-                  <div className="mt-4 flex flex-wrap gap-2">
+                  <div className="mt-4 grid grid-cols-1 gap-2 min-[420px]:grid-cols-2 lg:flex lg:flex-wrap">
                     {services.map((s) => (
                       <button
                         key={s.slug}
@@ -417,7 +418,7 @@ export function QuoteSection() {
                         aria-pressed={service === s.title}
                         onClick={() => setService(s.title)}
                         className={cn(
-                          "label inline-flex items-center gap-1.5 border px-3.5 py-2 transition-all duration-200 ease-[var(--ease-out-expo)]",
+                          "label inline-flex min-w-0 items-center gap-1.5 border px-3.5 py-2 text-left whitespace-normal [overflow-wrap:anywhere] transition-all duration-200 ease-[var(--ease-out-expo)]",
                           service === s.title
                             ? "border-cyan bg-cyan/10 text-cyan-bright"
                             : "border-white/12 text-white/50 hover:border-white/30 hover:text-white/80",
@@ -448,26 +449,27 @@ export function QuoteSection() {
                       </span>
                       <input
                         type="text"
+                        inputMode={f.key === "quantity" || f.key === "size" ? "text" : undefined}
                         value={values[f.key]}
                         placeholder={f.placeholder}
                         onChange={(e) =>
                           setValues((v) => ({ ...v, [f.key]: e.target.value }))
                         }
-                        className="mt-2.5 w-full rounded-md border border-white/10 bg-navy-900/60 px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-white/25 focus:border-cyan-bright focus:ring-1 focus:ring-cyan-bright/30"
+                        className="mt-2.5 block w-full min-w-0 max-w-full rounded-md border border-white/10 bg-navy-900/60 px-4 py-3 text-base text-white outline-none transition-all placeholder:text-white/25 focus:border-cyan-bright focus:ring-1 focus:ring-cyan-bright/30 sm:text-sm"
                       />
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Bottom Actions */}
+              {/* Bottom Actions — stack on mobile, row on desktop */}
               <div className="mt-10 border-t border-white/[0.07] pt-8">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <a
                     href={whatsappUrl(ctx)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center justify-center gap-3 rounded-full border-2 border-[#25d366] bg-[#25d366] px-8 py-3.5 text-sm font-bold tracking-wide uppercase text-white shadow-[0_4px_20px_-4px_rgba(37,211,102,0.4)] transition-all duration-200 hover:bg-[#20c05c] hover:shadow-[0_6px_24px_-4px_rgba(37,211,102,0.6)]"
+                    className="group inline-flex w-full items-center justify-center gap-3 rounded-full border-2 border-[#25d366] bg-[#25d366] px-8 py-3.5 text-sm font-bold tracking-wide uppercase text-white shadow-[0_4px_20px_-4px_rgba(37,211,102,0.4)] transition-all duration-200 hover:bg-[#20c05c] hover:shadow-[0_6px_24px_-4px_rgba(37,211,102,0.6)] sm:w-auto"
                   >
                     <WhatsAppIcon className="size-4.5" />
                     Send via WhatsApp
@@ -479,7 +481,7 @@ export function QuoteSection() {
                     href={`mailto:${contact.emailPrimary}?subject=${encodeURIComponent(
                       `Quotation request — ${service}`,
                     )}&body=${encodeURIComponent(preview)}`}
-                    className="group inline-flex items-center justify-center gap-3 rounded-full border border-white/20 px-8 py-3.5 text-sm font-bold tracking-wide uppercase text-white/70 transition-all duration-200 hover:border-white/40 hover:text-white"
+                    className="group inline-flex w-full items-center justify-center gap-3 rounded-full border border-white/20 px-8 py-3.5 text-sm font-bold tracking-wide uppercase text-white/70 transition-all duration-200 hover:border-white/40 hover:text-white sm:w-auto"
                   >
                     <MailIcon className="size-4" />
                     Send by Email

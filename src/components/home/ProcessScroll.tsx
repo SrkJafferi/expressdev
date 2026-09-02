@@ -19,12 +19,17 @@ const useIsoLayoutEffect =
  * SIGNATURE INTERACTION — vertical scroll drives horizontal movement.
  *
  * Desktop (≥1024px, motion allowed): the section pins and the panel track
- * translates on the X axis, driven 1:1 by scroll progress. No hijacking —
- * scroll speed and direction stay under the user's control, and the pin
- * releases as soon as the track completes.
+ * translates on the X axis, driven 1:1 by scroll progress via
+ * gsap.matchMedia(). No hijacking — scroll speed and direction stay under
+ * the user's control, and the pin releases as soon as the track completes.
  *
- * Mobile / reduced-motion: no pinning at all. The same panels become a
- * native horizontal snap-scroll carousel that the user swipes.
+ * Mobile / tablet (<1024px): NO pinning, NO horizontal hijacking. The
+ * panels are a native snap-scroll carousel (already styled via the
+ * lg: classes below) so vertical page scroll always continues naturally
+ * and swipe behaviour stays reliable.
+ *
+ * Reduced motion: desktop pinning is disabled entirely; mobile native
+ * carousel unaffected (it is real user-driven scrolling, not animation).
  */
 export function ProcessScroll() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -35,13 +40,9 @@ export function ProcessScroll() {
     const track = trackRef.current;
     if (!section || !track) return;
 
-    const mqDesktop = window.matchMedia("(min-width: 1024px)");
-    const mqReduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (!mqDesktop.matches || mqReduced.matches) return;
-
     let cancelled = false;
     // Minimal structural type — gsap stays a dynamic import.
-    let ctx: { revert: () => void } | undefined;
+    let mm: { revert: () => void } | undefined;
 
     (async () => {
       const [{ gsap }, { ScrollTrigger }] = await Promise.all([
@@ -52,46 +53,56 @@ export function ProcessScroll() {
 
       gsap.registerPlugin(ScrollTrigger);
 
-      // Scoped context: every tween/trigger created here is owned by this
-      // section. ctx.revert() kills them ALL and restores the DOM — including
-      // unwrapping the pin-spacer ScrollTrigger wraps the section in.
-      ctx = gsap.context(() => {
-        const distance = () => track.scrollWidth - window.innerWidth;
+      // gsap.matchMedia() sets up the desktop pin ONLY at ≥1024px with
+      // motion allowed, and reverts it automatically when the breakpoint no
+      // longer matches — no orphaned pin-spacers, no mobile scroll
+      // interference. On mobile nothing is created, so native swiping is
+      // untouched.
+      const mmedia = gsap.matchMedia();
 
-        gsap.to(track, {
-          x: () => -distance(),
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: () => `+=${distance()}`,
-            pin: true,
-            scrub: 0.6,
-            anticipatePin: 1,
-            invalidateOnRefresh: true,
-          },
-        });
+      mmedia.add(
+        "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          const ctxGsap = gsap.context(() => {
+            const distance = () => track.scrollWidth - window.innerWidth;
 
-        // Progress rule
-        gsap.to("[data-process-progress]", {
-          scaleX: 1,
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top top",
-            end: () => `+=${distance()}`,
-            scrub: true,
-          },
-        });
-      }, section);
+            gsap.to(track, {
+              x: () => -distance(),
+              ease: "none",
+              scrollTrigger: {
+                trigger: section,
+                start: "top top",
+                end: () => `+=${distance()}`,
+                pin: true,
+                scrub: 0.6,
+                anticipatePin: 1,
+                invalidateOnRefresh: true,
+              },
+            });
+
+            // Progress rule
+            gsap.to("[data-process-progress]", {
+              scaleX: 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: section,
+                start: "top top",
+                end: () => `+=${distance()}`,
+                scrub: true,
+              },
+            });
+          }, section);
+        },
+      );
+
+      mm = mmedia;
     })();
 
     return () => {
       cancelled = true;
-      // Layout-effect cleanup runs synchronously BEFORE React removes the
-      // section's DOM nodes, so the pin-spacer is unwrapped in time and
-      // React's removeChild calls see the structure it expects.
-      ctx?.revert();
+      // Reverts every context inside matchMedia — scoped, safe cleanup
+      // that runs BEFORE React removes DOM nodes (layout-effect timing).
+      mm?.revert();
     };
   }, []);
 
@@ -124,15 +135,17 @@ export function ProcessScroll() {
         </div>
       </div>
 
-      {/* Panel track */}
+      {/* Panel track — mobile: native swipe (snap-proximity so partial
+          swipes never feel stuck, overscroll contained so swipes never
+          bounce the page). Desktop: GSAP-translated, snap disabled. */}
       <div
         ref={trackRef}
-        className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 py-10 sm:px-10 lg:h-full lg:snap-none lg:items-center lg:gap-8 lg:overflow-visible lg:py-0 lg:pl-[max(2.5rem,calc((100vw-96rem)/2+4rem))] lg:pr-[30vw] lg:pt-[13rem]"
+        className="no-scrollbar flex snap-x snap-proximity gap-5 overflow-x-auto overscroll-x-contain px-5 py-10 sm:px-10 lg:h-full lg:snap-none lg:items-center lg:gap-8 lg:overflow-visible lg:py-0 lg:pl-[max(2.5rem,calc((100vw-96rem)/2+4rem))] lg:pr-[30vw] lg:pt-[13rem]"
       >
         {processStages.map((stage, i) => (
           <article
             key={stage.title}
-            className="relative flex w-[82vw] shrink-0 snap-center flex-col sm:w-[62vw] lg:w-[30rem]"
+            className="relative flex w-[84vw] min-w-0 shrink-0 snap-center flex-col sm:w-[62vw] lg:w-[30rem]"
           >
             <div className="flex items-baseline gap-4 border-t border-white/20 pt-5">
               <div className="min-h-[76px]">

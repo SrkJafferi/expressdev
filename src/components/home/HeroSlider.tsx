@@ -53,7 +53,10 @@ export function HeroSlider() {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div className="relative h-[86svh] min-h-[560px] w-full lg:h-[88svh]">
+      {/* dvh-based height on mobile (survives iOS browser chrome show/hide);
+          desktop keeps the approved 88svh. Content bottom padding reserves
+          room for the pagination row so CTAs never collide with controls. */}
+      <div className="relative h-[calc(100dvh-5rem)] min-h-[540px] w-full lg:h-[88svh] lg:min-h-[560px]">
         {/* Slides — crossfade with a slow ken-burns scale.
             initial={false}: the first slide paints fully visible immediately
             (no dark start), transitions for later slides are unchanged. */}
@@ -106,7 +109,7 @@ export function HeroSlider() {
         </div>
 
         {/* Content */}
-        <div className="relative z-20 flex h-full items-end pb-16 lg:items-center lg:pb-0">
+        <div className="relative z-20 flex h-full items-end pb-24 lg:items-center lg:pb-0">
           <div className="shell w-full">
             <div>
               {/* initial={false}: slide 1 content is fully visible on SSR

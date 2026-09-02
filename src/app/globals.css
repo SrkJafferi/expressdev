@@ -78,8 +78,11 @@
        canvas when no background is set). */
     background-color: var(--color-navy-900);
     color-scheme: light;
-    /* Smooth scrolling is handled by Lenis (SmoothScroll provider).
-       Keep CSS scroll-behavior off to avoid double smoothing. */
+    /* Safety layer after component-level overflow fixes: clip (not hidden)
+       so position: sticky children keep working. Smooth scrolling is
+       handled by Lenis (SmoothScroll provider) — keep CSS scroll-behavior
+       off to avoid double smoothing. */
+    overflow-x: clip;
   }
 
   body {
@@ -91,6 +94,17 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     overflow-x: clip;
+  }
+
+  /* iOS Safari: keep form controls ≥16px on small screens so focusing a
+     field never triggers the automatic page-zoom (which breaks layouts).
+     Desktop keeps its approved type scale. */
+  @media (max-width: 1023px) {
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea {
+      font-size: 16px;
+    }
   }
 
   ::selection {
@@ -192,17 +206,19 @@
    *
    * The ramp below is tuned to land on 35.2px at 640px — the exact value the
    * 40rem branch produces — so the hand-off is continuous and phones scale.
+   * Mobile minimum raised to 2.375rem (38px) per mobile QA so hero copy
+   * stays legible; desktop remains vw-driven and unchanged.
    */
   .display-hero {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: clamp(1.5rem, 1.05rem + 2.875vw, 2.5rem);
+    font-size: clamp(2.375rem, 0.9rem + 4.2vw, 2.5rem);
     line-height: 0.98;
     letter-spacing: var(--tracking-display);
   }
   @media (min-width: 40rem) {
     .display-hero {
-      font-size: clamp(1.84rem, 5.5vw, 5.71rem);
+      font-size: clamp(2.375rem, 5.5vw, 5.71rem);
       line-height: 0.9;
       letter-spacing: var(--tracking-tightest);
     }

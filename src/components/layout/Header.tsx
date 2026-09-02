@@ -70,7 +70,10 @@ export function Header() {
           "relative border-b transition-all duration-500 ease-[var(--ease-out-expo)]",
           scrolled
             ? "border-rule/80 bg-paper/95 text-ink shadow-sm backdrop-blur-md"
-            : "border-transparent bg-transparent text-white",
+            : // Mobile: keep a translucent navy scrim at the very top so the
+              // white logo + controls stay visible over ANY hero imagery.
+              // Desktop keeps the approved transparent treatment.
+              "border-transparent text-white max-lg:bg-navy-900/60 max-lg:shadow-sm max-lg:backdrop-blur-md",
         )}
       >
         <div
@@ -238,11 +241,12 @@ export function Header() {
       </header>
       </div>
 
-      {/* Mobile panel */}
+      {/* Mobile panel — full-height drawer below the header; overscroll
+          contained so swipes never bounce the page behind it */}
       <div
         id="mobile-menu"
         hidden={!open}
-        className="fixed inset-x-0 bottom-0 top-[calc(5rem+2px)] z-40 overflow-y-auto bg-paper lg:hidden"
+        className="fixed inset-x-0 bottom-0 top-[calc(5rem+2px)] z-40 overflow-y-auto overscroll-contain bg-paper pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         <nav aria-label="Mobile" className="shell py-8">
           <ul className="border-t border-rule">
