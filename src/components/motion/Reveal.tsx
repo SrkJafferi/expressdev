@@ -63,7 +63,12 @@ export function Reveal({
       className={cn(className)}
       initial="hidden"
       whileInView="shown"
-      viewport={{ once: true, amount: "some" }}
+      // `amount: "some"` fired the moment 1px crossed the fold, so on a fast
+      // scroll the animation was already over by the time the element was
+      // readable. A negative bottom margin delays the trigger until the
+      // element is ~15% into the viewport, and — unlike a percentage
+      // `amount` — it still works for elements taller than the viewport.
+      viewport={{ once: true, amount: "some", margin: "0px 0px -15% 0px" }}
       variants={variants}
     >
       {children}

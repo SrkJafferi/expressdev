@@ -10,7 +10,7 @@ import { CustomCursor } from "@/components/ui/CustomCursor";
 import { contact, site } from "@/data/site";
 
 /**
- * Typography system mirrors safiz.pk: Plus Jakarta Sans used for both
+ * Typography: Plus Jakarta Sans used for both
  * display and body, weights 300–800, tight tracking on display sizes and
  * wide tracking on uppercase labels.
  */

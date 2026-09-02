@@ -102,7 +102,7 @@ export function ProcessScroll() {
       className="relative overflow-hidden bg-navy-900 text-white lg:h-screen"
     >
       {/* Section head */}
-      <div className="shell relative z-10 pt-16 lg:absolute lg:inset-x-0 lg:top-0 lg:pt-24">
+      <div className="shell relative z-10 pt-16 pb-8 lg:absolute lg:inset-x-0 lg:top-0 lg:pt-24 lg:pb-0">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <SectionLabel accent="cyan" invert>
@@ -127,7 +127,7 @@ export function ProcessScroll() {
       {/* Panel track */}
       <div
         ref={trackRef}
-        className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 py-10 sm:px-10 lg:h-full lg:snap-none lg:items-center lg:gap-8 lg:overflow-visible lg:py-0 lg:pl-[max(2.5rem,calc((100vw-96rem)/2+4rem))] lg:pr-[30vw] lg:pt-40"
+        className="no-scrollbar flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 py-10 sm:px-10 lg:h-full lg:snap-none lg:items-center lg:gap-8 lg:overflow-visible lg:py-0 lg:pl-[max(2.5rem,calc((100vw-96rem)/2+4rem))] lg:pr-[30vw] lg:pt-[13rem]"
       >
         {processStages.map((stage, i) => (
           <article

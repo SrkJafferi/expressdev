@@ -26,11 +26,28 @@ export type Service = {
 const servicePages: Partial<Record<string, string>> = {
   "printing-services": "/service-printing-services",
   "large-format-printing": "/service-large-format-printing",
+  signage: "/service-signage",
+  "promotional-items": "/service-promotional-items",
+  "brand-collateral": "/service-brand-collateral",
+  "retail-events-exhibition": "/service-retail-events-exhibition",
+  "cnc-laser-cutting": "/service-cnc-laser-cutting",
+  "digital-design": "/service-digital-design",
+  "it-services": "/service-it-services",
 };
 
 /** Clean URL for a service — dedicated page when available, anchor otherwise. */
 export function serviceHref(slug: string): string {
   return servicePages[slug] ?? `/#service-${slug}`;
+}
+
+/**
+ * True when a service has a dedicated landing page. Lets the services index
+ * give every card a meaningful action instead of an anchor that leads back
+ * to the homepage: real pages get "View details", everything else routes
+ * straight into a pre-filled WhatsApp quotation.
+ */
+export function hasServicePage(slug: string): boolean {
+  return Boolean(servicePages[slug]);
 }
 
 export const services: Service[] = [

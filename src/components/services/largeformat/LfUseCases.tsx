@@ -12,9 +12,9 @@ export function LfUseCases() {
 
       <div className="shell relative z-10">
         <div className="grid gap-8 lg:grid-cols-12">
-          <Reveal from="up" className="lg:col-span-7">
+          <Reveal from="up" className="lg:col-span-8">
             <SectionLabel accent="navy">Where it lives</SectionLabel>
-            <h2 className="display-md mt-6 overflow-visible text-balance pt-[0.06em] pb-[0.14em] pl-[0.03em] text-navy-900">
+            <h2 className="display-md mt-6 text-balance text-navy-900 overflow-visible pt-[0.06em] pb-[0.14em] pl-[0.03em]">
               Made For Places
               <br />
               Where Brands Compete For{" "}
@@ -46,7 +46,7 @@ export function LfUseCases() {
 
                 <div className="absolute inset-x-0 bottom-0 p-5">
                   <p className="label-wide text-cyan-bright">{useCase.label}</p>
-                  <p className="mt-2 text-[0.8125rem] leading-snug text-white/75 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <p className="mt-2 text-[0.8125rem] leading-snug text-white/75 opacity-100 transition-opacity duration-300 lg:opacity-0 lg:group-hover:opacity-100">
                     {useCase.body}
                   </p>
                 </div>

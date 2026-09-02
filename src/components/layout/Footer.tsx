@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { nav, site } from "@/data/site";
+import { nav, site, socials } from "@/data/site";
 import { services, serviceHref } from "@/data/services";
 import { ArrowUpRight } from "@/components/ui/Icons";
 import { CmykTicks } from "@/components/ui/PrintMarks";
@@ -30,22 +30,30 @@ import {
 
 type IconType = (props: { className?: string }) => React.ReactElement;
 
-/** Social media links requested with # as placeholders */
-const footerSocials: Array<{ label: string; href: string; icon: IconType }> = [
-  { label: "LinkedIn", href: "#", icon: LinkedInIcon },
-  { label: "Instagram", href: "#", icon: InstagramIcon },
-  { label: "Facebook", href: "#", icon: FacebookIcon },
-  { label: "YouTube", href: "#", icon: YouTubeIcon },
-  { label: "Pinterest", href: "#", icon: PinterestIcon },
-  { label: "TikTok", href: "#", icon: TikTokIcon },
-];
+/**
+ * Social label → line icon.
+ *
+ * The row below renders whatever is in `socials` (src/data/site.ts) instead of
+ * hardcoding links: six `href="#"` placeholders shipped here before and every
+ * one of them was a dead end that looked broken to anyone who tapped it.
+ * No verified profile → no link → nothing rendered. Add a real URL to
+ * `socials` and it appears here automatically.
+ */
+const socialIcons: Record<string, IconType> = {
+  LinkedIn: LinkedInIcon,
+  Instagram: InstagramIcon,
+  Facebook: FacebookIcon,
+  YouTube: YouTubeIcon,
+  Pinterest: PinterestIcon,
+  TikTok: TikTokIcon,
+};
 
 /** Nav href → line icon. */
 const navIcons: Record<string, IconType> = {
   "/": HomeIcon,
   "/about": AboutIcon,
   "/services": GridIcon,
-  "/#clients": ImageIcon,
+  "/clients": ImageIcon,
   "/contact": ContactIcon,
 };
 
@@ -117,22 +125,27 @@ export function Footer() {
             </div>
             <CmykTicks className="mt-7 h-1 w-20" />
 
-            <ul className="mt-7 flex flex-wrap gap-2.5">
-              {footerSocials.map((s) => {
-                const Icon = s.icon;
-                return (
-                  <li key={s.label}>
-                    <a
-                      href={s.href}
-                      aria-label={s.label}
-                      className="grid size-9 place-items-center rounded-full border border-navy-300/60 bg-white/60 text-navy/80 shadow-xs backdrop-blur-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan hover:bg-cyan hover:text-white hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/60"
-                    >
-                      <Icon className="size-4" />
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
+            {socials.length > 0 && (
+              <ul className="mt-7 flex flex-wrap gap-2.5">
+                {socials.map((s) => {
+                  const Icon = socialIcons[s.label];
+                  if (!Icon) return null;
+                  return (
+                    <li key={s.label}>
+                      <a
+                        href={s.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={s.label}
+                        className="grid size-9 place-items-center rounded-full border border-navy-300/60 bg-white/60 text-navy/80 shadow-xs backdrop-blur-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan hover:bg-cyan hover:text-white hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/60"
+                      >
+                        <Icon className="size-4" />
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
 
           {/* COLUMN 2 — NAVIGATE */}

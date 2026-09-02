@@ -19,8 +19,9 @@ const hours = [
 ];
 
 // Google Maps embed for the verified business listing — no API key required.
+// Query is the business name + city only; never append another brand's name.
 const MAP_EMBED =
-  "https://maps.google.com/maps?q=Express%20Advertising%20-%20Safiz%20Group&t=m&z=17&output=embed&iwloc=near";
+  "https://maps.google.com/maps?q=Express%20Advertising%20Ajman%20UAE&t=m&z=17&output=embed&iwloc=near";
 
 /**
  * Visit the studio — a premium closing composition: a large lazy-loaded Google
@@ -77,7 +78,7 @@ export function LocationContact() {
           <div className="overflow-hidden rounded-lg border border-white/10 lg:mr-[26rem]">
             <iframe
               src={MAP_EMBED}
-              title="Express Advertising — Safiz Group location on Google Maps, Ajman, UAE"
+              title="Express Advertising location on Google Maps, Ajman, UAE"
               aria-label="Map showing Express Advertising in Ajman, UAE"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"

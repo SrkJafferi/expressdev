@@ -35,13 +35,21 @@ export const nav = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
-  { label: "Clients", href: "/#clients" },
+  { label: "Clients", href: "/clients" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
 /**
- * Social profiles are intentionally empty: none were verifiable on the
- * current Express Advertising website. Add verified URLs here and the
- * footer will render them automatically.
+ * Social profiles — intentionally empty.
+ *
+ * No profile could be verified for the Ajman business (the "Express
+ * Advertising" LinkedIn company page that ranks is a different company in
+ * Egypt), and a guessed URL is worse than no URL, so the footer renders
+ * nothing until real ones land here.
+ *
+ * Add entries and the footer picks them up with no further changes:
+ *   { label: "Instagram", href: "https://www.instagram.com/…" }
+ * Recognised labels: LinkedIn, Instagram, Facebook, YouTube, Pinterest, TikTok.
+ * Anything else is skipped rather than rendered iconless.
  */
 export const socials: { label: string; href: string }[] = [];

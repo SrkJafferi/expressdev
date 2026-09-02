@@ -8,10 +8,9 @@ export type Client = {
 };
 
 /**
- * Verified UAE clients — the same roster shown under safiz.pk → Our Clients →
- * UAE Clients (shared ownership with Express Advertising). Logo assets were
- * copied from the original safiz.pk /clients/uae/ WebP files into
- * /public/images/clients/. Filenames preserve the source spellings.
+ * Verified UAE clients for Express Advertising. Logo assets live under
+ * /public/images/clients/ and filenames preserve their original spellings —
+ * rename them at your own risk, the paths are referenced directly.
  * Add ONLY UAE clients here — never Pakistan clients.
  */
 export const clients: Client[] = [

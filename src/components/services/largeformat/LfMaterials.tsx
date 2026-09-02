@@ -90,14 +90,19 @@ export function LfMaterials() {
                       <h3 className={`text-[0.9375rem] font-bold tracking-tight ${s.label}`}>
                         {material.name}
                       </h3>
+                      {/* Touch devices have no hover — show the note inline
+                          so it is never permanently hidden on mobile. */}
+                      <p className="mt-1.5 text-xs leading-relaxed text-white/70 lg:hidden">
+                        {material.note}
+                      </p>
                     </div>
 
-                    {/* Hover note overlay */}
+                    {/* Hover note overlay — desktop only (pointer: fine) */}
                     <div
                       aria-hidden
-                      className="absolute inset-0 bg-navy-900/85 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      className="absolute inset-0 hidden bg-navy-900/85 opacity-0 transition-opacity duration-300 group-hover:opacity-100 lg:block"
                     />
-                    <div className="absolute inset-0 flex flex-col justify-end p-5 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <div className="absolute inset-0 hidden flex-col justify-end p-5 opacity-0 transition-opacity duration-300 group-hover:opacity-100 lg:flex">
                       <h3 className={`text-[0.9375rem] font-bold tracking-tight ${s.label}`}>
                         {material.name}
                       </h3>

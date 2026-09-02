@@ -132,6 +132,7 @@ export function ProductCatalogue() {
   const [canScrollRight, setCanScrollRight] = useState(true);
   const reduced = useReducedMotion();
   const railRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
   const activeCat =
     productCategories.find((c) => c.id === active) ?? productCategories[0]!;
@@ -189,6 +190,47 @@ export function ProductCatalogue() {
         behavior: "smooth",
       });
     }
+  };
+
+  /**
+   * WAI-ARIA Tabs keyboard support. The list already advertised
+   * role="tablist"/role="tab" but shipped no key handling and no roving
+   * tabindex, so a keyboard user tabbed into nine separate buttons with no
+   * way to tell they were related — and a screen reader announced a tab set
+   * that did not behave like one.
+   */
+  const onTabKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    const count = productCategories.length;
+    const idx = productCategories.findIndex((c) => c.id === active);
+    if (idx < 0 || count === 0) return;
+
+    let next = -1;
+    switch (e.key) {
+      case "ArrowRight":
+        next = (idx + 1) % count;
+        break;
+      case "ArrowLeft":
+        next = (idx - 1 + count) % count;
+        break;
+      case "Home":
+        next = 0;
+        break;
+      case "End":
+        next = count - 1;
+        break;
+      default:
+        return;
+    }
+
+    e.preventDefault();
+    const target = productCategories[next];
+    if (!target) return;
+
+    const el = tabRefs.current[target.id];
+    selectCategory(target.id, el);
+    // preventScroll: the smooth centering above owns the scroll position;
+    // letting focus() scroll too produces a visible double-jump.
+    el?.focus({ preventScroll: true });
   };
 
   return (
@@ -266,10 +308,16 @@ export function ProductCatalogue() {
                   return (
                     <button
                       key={c.id}
+                      ref={(node) => {
+                        tabRefs.current[c.id] = node;
+                      }}
+                      id={`catalogue-tab-${c.id}`}
                       role="tab"
                       type="button"
                       aria-selected={isActive}
                       aria-controls="catalogue-grid"
+                      tabIndex={isActive ? 0 : -1}
+                      onKeyDown={onTabKeyDown}
                       onClick={(e) => selectCategory(c.id, e.currentTarget)}
                       className={cn(
                         "relative flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-xl px-4 py-2.5 text-center text-xs font-semibold tracking-tight outline-none transition-all duration-300 sm:px-5 sm:py-3 sm:text-sm focus-visible:ring-2 focus-visible:ring-navy/50",
@@ -311,6 +359,7 @@ export function ProductCatalogue() {
         <div
           id="catalogue-grid"
           role="tabpanel"
+          aria-labelledby={`catalogue-tab-${active}`}
           className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:mt-12 lg:grid-cols-3 xl:grid-cols-4"
         >
           <AnimatePresence mode="popLayout" initial={false}>
@@ -344,7 +393,7 @@ export function ProductCatalogue() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Request a quote for ${p.name}`}
-                    className="absolute bottom-3 left-3 inline-flex translate-y-3 items-center gap-1.5 rounded-full bg-navy px-4 py-2 text-[0.6875rem] font-bold uppercase tracking-wider text-white opacity-0 shadow-lg transition-all duration-400 ease-[var(--ease-out-expo)] group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100"
+                    className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-navy px-4 py-2 text-[0.6875rem] font-bold uppercase tracking-wider text-white shadow-lg transition-all duration-400 ease-[var(--ease-out-expo)] focus-visible:translate-y-0 focus-visible:opacity-100 lg:translate-y-3 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100"
                   >
                     Request Quote
                     <ArrowUpRight className="size-3" />

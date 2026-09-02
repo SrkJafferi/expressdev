@@ -181,10 +181,22 @@
 
   /* Hero-only heading scale — tuned ~5% below the previous hero scale;
      glyph paint padding lives on the element. */
+  /*
+   * Hero display size.
+   *
+   * The old ramp was clamp(1.53rem, 2.82vw, 2.69rem): 2.82vw only reaches the
+   * 1.53rem floor at an 868px viewport, so on every phone the headline was
+   * pinned flat at 24.48px — a 320px handset and a 600px phablet rendered the
+   * hero at exactly the same size. It then jumped 44% (24.48px → 35.2px) the
+   * instant the 40rem breakpoint swapped in a different clamp.
+   *
+   * The ramp below is tuned to land on 35.2px at 640px — the exact value the
+   * 40rem branch produces — so the hand-off is continuous and phones scale.
+   */
   .display-hero {
     font-family: var(--font-display);
     font-weight: 800;
-    font-size: clamp(1.53rem, 2.82vw, 2.69rem);
+    font-size: clamp(1.5rem, 1.05rem + 2.875vw, 2.5rem);
     line-height: 0.98;
     letter-spacing: var(--tracking-display);
   }
@@ -227,7 +239,7 @@
     text-wrap: pretty;
   }
 
-  /* Section label — small caps, wide tracking (Safiz typography behaviour) */
+  /* Section label — small caps, wide tracking */
   .label {
     font-size: 0.6875rem;
     font-weight: 600;

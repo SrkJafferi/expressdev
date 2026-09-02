@@ -1,0 +1,118 @@
+import { SectionLabel } from "@/components/ui/SectionLabel";
+import { Reveal } from "@/components/motion/Reveal";
+import { CnIcon } from "./CnIcons";
+
+const steps = [
+  {
+    index: "01",
+    label: "PREPARE",
+    caption: "Artwork · Dimensions · Cut Path",
+    icon: "prepare",
+    accent: "border-cyan text-cyan-bright",
+  },
+  {
+    index: "02",
+    label: "SELECT",
+    caption: "Material · Thickness · Application",
+    icon: "material",
+    accent: "border-magenta/60 text-magenta",
+  },
+  {
+    index: "03",
+    label: "CUT",
+    caption: "CNC · Laser · Engrave",
+    icon: "cnc",
+    accent: "border-navy/50 text-navy",
+  },
+  {
+    index: "04",
+    label: "FINISH",
+    caption: "Clean · Assemble · Check",
+    icon: "finish",
+    accent: "border-yellow/70 text-[#c9a800]",
+  },
+] as const;
+
+export function CnProcess() {
+  return (
+    <section className="relative isolate overflow-hidden bg-[#edf1f5] py-24 lg:py-32">
+      {/* Ambient orbs */}
+      <div aria-hidden className="pointer-events-none absolute -right-40 top-0 h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,rgba(236,39,144,0.05)_0%,transparent_70%)]" />
+      <div aria-hidden className="pointer-events-none absolute -left-40 bottom-0 h-[380px] w-[380px] rounded-full bg-[radial-gradient(circle,rgba(0,153,218,0.06)_0%,transparent_70%)]" />
+
+      {/* Watermark */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-6 -translate-x-1/2 select-none whitespace-nowrap text-[14vw] font-extrabold leading-none tracking-tight text-navy/[0.03] lg:text-[9.5rem]"
+      >
+        WORKFLOW
+      </span>
+
+      <div className="shell relative z-10">
+        <div className="grid gap-8 lg:grid-cols-12">
+          <Reveal from="up" className="lg:col-span-7">
+            <SectionLabel accent="cyan">Fabrication process</SectionLabel>
+            <h2 className="display-md mt-6 overflow-visible text-balance pt-[0.06em] pb-[0.14em] pl-[0.03em] text-navy-900">
+              From Drawing
+              <br />
+              To Finished{" "}
+              <span className="text-gradient-deep">Component.</span>
+            </h2>
+          </Reveal>
+          <Reveal
+            from="up"
+            delay={0.12}
+            className="lg:col-span-4 lg:col-start-9 lg:self-end"
+          >
+            <p className="lede text-ink-2">
+              Precision fabrication depends on accurate artwork, suitable
+              material selection and correct machine setup before the first
+              cut begins.
+            </p>
+          </Reveal>
+        </div>
+
+        {/* 2x2 / 4-across circular node timeline with measurement ticks */}
+        <Reveal from="up" delay={0.2}>
+          <ol className="relative mx-auto mt-16 grid max-w-5xl grid-cols-2 gap-x-16 gap-y-10 lg:grid-cols-4">
+            {/* Connecting line + measurement markers — desktop only */}
+            <span
+              aria-hidden
+              className="absolute left-[12%] right-[12%] top-12 hidden border-t-2 border-dashed border-cyan/35 lg:block"
+            />
+            <span aria-hidden className="absolute left-1/4 top-9 hidden h-3 w-px bg-cyan/40 lg:block" />
+            <span aria-hidden className="absolute left-1/2 top-9 hidden h-3 w-px bg-cyan/40 lg:block" />
+            <span aria-hidden className="absolute left-3/4 top-9 hidden h-3 w-px bg-cyan/40 lg:block" />
+
+            {steps.map((step) => (
+              <li
+                key={step.index}
+                className="group relative flex flex-col items-center text-center"
+              >
+                <span
+                  className={`relative z-10 grid size-24 place-items-center rounded-full border-[2.5px] bg-white shadow-[0_6px_18px_-8px_rgba(16,48,90,0.25)] transition-all duration-300 ease-[var(--ease-out-expo)] group-hover:-translate-y-1 ${step.accent}`}
+                >
+                  <CnIcon name={step.icon} className="size-16" />
+                </span>
+
+                <span className="mt-4 text-sm font-bold tracking-tight text-navy-900">
+                  {step.label}
+                </span>
+                <span className="mt-1 text-[0.75rem] leading-snug text-ink-3">
+                  {step.caption}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </Reveal>
+
+        {/* Bottom micro-copy */}
+        <Reveal from="up" delay={0.3}>
+          <p className="label-wide mt-14 text-center text-ink-3">
+            Every component produced to the approved digital file
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}

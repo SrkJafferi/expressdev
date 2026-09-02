@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { services } from "@/data/services";
 import { contact, site } from "@/data/site";
+import { reviewSummary } from "@/data/reviews";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { ArrowUpRight, MailIcon, PhoneIcon, WhatsAppIcon } from "@/components/ui/Icons";
 import { buildQuoteMessage, whatsappUrl } from "@/lib/whatsapp";
@@ -129,10 +130,35 @@ function DirectionalArrow() {
 type StatAccent = "cyan" | "magenta" | "yellow";
 type Stat = { value: string; label: [string, string]; accent: StatAccent };
 
+/**
+ * Proof points.
+ *
+ * These were hardcoded as "20+ Years of Excellence", "100+ Brands Served" and
+ * "3 Office Locations". None trace back to anything verifiable, and the third
+ * actively contradicted the rest of the site: src/data/site.ts holds exactly
+ * one address, in Ajman. Publishing a number the same page disproves is worse
+ * than publishing none.
+ *
+ * Every value below is derived from data the project actually has, so it
+ * cannot silently drift. Swap in real figures when they exist — the shape is
+ * unchanged.
+ */
 const stats: Stat[] = [
-  { value: "20+", label: ["Years of", "Excellence"], accent: "cyan" },
-  { value: "100+", label: ["Brands", "Served"], accent: "magenta" },
-  { value: "3", label: ["Office", "Locations"], accent: "yellow" },
+  {
+    value: reviewSummary.rating.toFixed(1),
+    label: ["Google", "rating"],
+    accent: "cyan",
+  },
+  {
+    value: `${reviewSummary.total}`,
+    label: ["Google", "reviews"],
+    accent: "magenta",
+  },
+  {
+    value: `${services.length}`,
+    label: ["Capabilities", "in-house"],
+    accent: "yellow",
+  },
 ];
 
 const accentTextClass = {

@@ -44,13 +44,10 @@ export const reviews: Review[] = [
     profileImage: "/images/reviews/jawahar-mehta.jpg",
     source: "Google",
   },
-  {
-    name: "Syed Ovais",
-    rating: 5,
-    text: "It has been 15 years that I have been working with Safi Printing Services. They are highly professional, consistently delivering seamless, high quality work on time. I confidently recommend their services.",
-    profileImage: "/images/reviews/syed-ovais.jpg",
-    source: "Google",
-  },
+  // NOTE: a review naming a different company ("Safi Printing Services") was
+  // removed from this feed. Publishing a testimonial that praises another
+  // business on our own site is a trust and brand-safety defect. Review text
+  // must never be edited to hide it — the entry is dropped instead.
   {
     name: "Ahmed Sharief Ali",
     rating: 5,

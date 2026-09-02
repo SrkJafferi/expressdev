@@ -159,7 +159,7 @@ export function HeroSlider() {
                   <ArrowRight className="transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1" />
                 </Link>
                 <a href={catalogueUrl} className="btn btn-ghost-invert group px-7">
-                  Download Catalogue
+                  View Catalogue
                   <ArrowRight className="rotate-90 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-y-0.5" />
                 </a>
               </div>
