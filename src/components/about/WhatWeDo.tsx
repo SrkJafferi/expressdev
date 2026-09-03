@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { services, type ServiceAccent } from "@/data/services";
+import { serviceHref, services, type ServiceAccent } from "@/data/services";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Reveal } from "@/components/motion/Reveal";
 import { ArrowRight } from "@/components/ui/Icons";
@@ -90,7 +90,7 @@ export function WhatWeDo() {
           {services.map((service, i) => (
             <Reveal key={service.slug} from="up" delay={(i % 3) * 0.08} className="h-full">
               <Link
-                href={`/services#${service.slug}`}
+                href={serviceHref(service.slug)}
                 className={cn(
                   "group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1.5",
                   accentRing[service.accent],

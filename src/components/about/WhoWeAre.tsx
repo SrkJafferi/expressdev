@@ -7,16 +7,36 @@ const highlights = [
     text: "Concept-to-installation capability under one roof",
     color: "text-cyan-bright",
     bg: "bg-cyan/10",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-4.5">
+        {/* Concept / idea */}
+        <path d="M12 2.8a6.2 6.2 0 0 0-4 11c.9.7 1.5 1.4 1.5 2.4v.3h5v-.3c0-1 .6-1.7 1.5-2.4a6.2 6.2 0 0 0-4-11z" />
+        <path d="M10.3 18.5h3.4M10.8 21h2.4" />
+      </svg>
+    ),
   },
   {
     text: "Production quality with precision & reliability",
     color: "text-magenta",
     bg: "bg-magenta/10",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-4.5">
+        {/* Quality / premium sparkle */}
+        <path d="M12 4c.9 3.6 2.4 5.1 6 6-3.6.9-5.1 2.4-6 6-.9-3.6-2.4-5.1-6-6 3.6-.9 5.1-2.4 6-6z" />
+      </svg>
+    ),
   },
   {
-    text: "UAE-wide delivery & on-site installation",
+    text: "On-site installation & support across the UAE",
     color: "text-yellow",
     bg: "bg-yellow/10",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="size-4.5">
+        {/* On-site / UAE-wide location pin */}
+        <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" />
+        <circle cx="12" cy="10" r="2.5" />
+      </svg>
+    ),
   },
 ];
 
@@ -66,19 +86,20 @@ export function WhoWeAre() {
               </p>
             </Reveal>
 
-            {/* Highlight checklist */}
+            {/* Highlight checklist — one row of mini-cards with icons */}
             <Reveal from="up" delay={0.3}>
-              <ul className="mt-8 space-y-3.5">
+              <ul className="mt-8 grid grid-cols-1 gap-3 min-[560px]:grid-cols-3 lg:max-w-none">
                 {highlights.map((item) => (
-                  <li key={item.text} className="flex items-center gap-3.5">
+                  <li
+                    key={item.text}
+                    className="flex flex-col items-start gap-3 rounded-xl border border-navy-900/10 bg-white p-4 shadow-[0_1px_0_rgba(16,48,90,0.04)] sm:p-5"
+                  >
                     <span
-                      className={`grid size-7 shrink-0 place-items-center rounded-full ${item.bg} ${item.color}`}
+                      className={`grid size-9 shrink-0 place-items-center rounded-full ${item.bg} ${item.color}`}
                     >
-                      <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="2.5 8.5 6 12 13.5 4" />
-                      </svg>
+                      {item.icon}
                     </span>
-                    <span className="text-[0.9375rem] font-medium text-ink">
+                    <span className="text-sm font-medium leading-snug text-ink">
                       {item.text}
                     </span>
                   </li>
