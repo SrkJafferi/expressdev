@@ -66,26 +66,6 @@ export function AboutCta() {
             </div>
           </Reveal>
 
-          {/* Trust strip */}
-          <Reveal from="up" delay={0.4}>
-            <div className="mt-14 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 border-t border-white/10 pt-8">
-              {[
-                "20+ Years of Excellence",
-                "100+ Brands Served",
-                "UAE-Wide Production & Delivery",
-              ].map((item) => (
-                <span
-                  key={item}
-                  className="flex items-center gap-2.5 text-sm font-medium text-white/55"
-                >
-                  <svg className="size-4 text-cyan-bright" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="2.5 8.5 6 12 13.5 4" />
-                  </svg>
-                  {item}
-                </span>
-              ))}
-            </div>
-          </Reveal>
         </div>
       </div>
 

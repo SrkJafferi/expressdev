@@ -1,77 +1,51 @@
+import Image from "next/image";
 import Link from "next/link";
-import { services } from "@/data/services";
+import { services, type ServiceAccent } from "@/data/services";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Reveal } from "@/components/motion/Reveal";
 import { ArrowRight } from "@/components/ui/Icons";
-import {
-  PrinterIcon,
-  SignpostIcon,
-  ScanLineIcon,
-  GiftIcon,
-  LayersIcon,
-  StoreIcon,
-  CrosshairIcon,
-  PenToolIcon,
-  MonitorIcon,
-} from "@/components/ui/FooterIcons";
+import { cn } from "@/lib/cn";
 
-const serviceIcons: Record<string, (p: { className?: string }) => React.ReactElement> = {
-  "printing-services": PrinterIcon,
-  signage: SignpostIcon,
-  "large-format-printing": ScanLineIcon,
-  "promotional-items": GiftIcon,
-  "brand-collateral": LayersIcon,
-  "retail-events-exhibition": StoreIcon,
-  "cnc-laser-cutting": CrosshairIcon,
-  "digital-design": PenToolIcon,
-  "it-services": MonitorIcon,
+const accentBar: Record<ServiceAccent, string> = {
+  cyan: "bg-cyan",
+  magenta: "bg-magenta",
+  navy: "bg-navy",
+  yellow: "bg-yellow",
 };
 
-const accentStyles: Record<
-  string,
-  {
-    iconWrap: string;
-    iconText: string;
-    line: string;
-    hoverBorder: string;
-    glow: string;
-    indexText: string;
-  }
-> = {
-  cyan: {
-    iconWrap: "bg-cyan/10 group-hover:bg-cyan",
-    iconText: "text-cyan-bright group-hover:text-white",
-    line: "bg-cyan",
-    hoverBorder: "group-hover:border-cyan/50",
-    glow: "group-hover:shadow-[0_18px_45px_-15px_rgba(0,153,218,0.35)]",
-    indexText: "text-cyan/15",
-  },
-  magenta: {
-    iconWrap: "bg-magenta/10 group-hover:bg-magenta",
-    iconText: "text-magenta group-hover:text-white",
-    line: "bg-magenta",
-    hoverBorder: "group-hover:border-magenta/50",
-    glow: "group-hover:shadow-[0_18px_45px_-15px_rgba(236,39,144,0.35)]",
-    indexText: "text-magenta/15",
-  },
-  navy: {
-    iconWrap: "bg-navy/10 group-hover:bg-navy",
-    iconText: "text-navy group-hover:text-white",
-    line: "bg-navy",
-    hoverBorder: "group-hover:border-navy/50",
-    glow: "group-hover:shadow-[0_18px_45px_-15px_rgba(27,77,133,0.35)]",
-    indexText: "text-navy/15",
-  },
-  yellow: {
-    iconWrap: "bg-yellow/15 group-hover:bg-yellow",
-    iconText: "text-[#c9a800] group-hover:text-navy-900",
-    line: "bg-yellow",
-    hoverBorder: "group-hover:border-yellow/60",
-    glow: "group-hover:shadow-[0_18px_45px_-15px_rgba(229,160,0,0.35)]",
-    indexText: "text-yellow/20",
-  },
+const accentText: Record<ServiceAccent, string> = {
+  cyan: "text-cyan",
+  magenta: "text-magenta",
+  navy: "text-navy",
+  yellow: "text-[#b08d00]",
 };
 
+const accentRing: Record<ServiceAccent, string> = {
+  cyan: "group-hover:border-cyan/40",
+  magenta: "group-hover:border-magenta/40",
+  navy: "group-hover:border-navy/40",
+  yellow: "group-hover:border-yellow/50",
+};
+
+const accentCta: Record<ServiceAccent, string> = {
+  cyan: "group-hover:bg-cyan",
+  magenta: "group-hover:bg-magenta",
+  navy: "group-hover:bg-navy",
+  yellow: "group-hover:bg-yellow",
+};
+
+const accentCtaText: Record<ServiceAccent, string> = {
+  cyan: "group-hover:text-white",
+  magenta: "group-hover:text-white",
+  navy: "group-hover:text-white",
+  yellow: "group-hover:text-navy-900",
+};
+
+/**
+ * What We Do — every capability rendered as an image card, same visual
+ * language as the Services index grid (photo plate + index chip + lede),
+ * so the About page shows the actual work rather than icon tiles.
+ */
 export function WhatWeDo() {
   return (
     <section className="relative isolate overflow-hidden bg-[#f5f8ff] py-20 lg:py-28">
@@ -111,61 +85,74 @@ export function WhatWeDo() {
           </Reveal>
         </div>
 
-        {/* Service cards grid */}
+        {/* Service cards grid — image-first, matching the services index */}
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:mt-16 lg:grid-cols-3">
-          {services.map((service, i) => {
-            const Icon = serviceIcons[service.slug];
-            const a = accentStyles[service.accent] ?? accentStyles.cyan!;
-            return (
-              <Reveal key={service.slug} from="up" delay={(i % 3) * 0.08}>
-                <Link
-                  href={`/services#${service.slug}`}
-                  className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-7 transition-all duration-300 hover:-translate-y-1.5 ${a.hoverBorder} ${a.glow}`}
-                >
-                  {/* Oversized index number */}
-                  <span
-                    aria-hidden
-                    className={`pointer-events-none absolute -right-1 -top-3 select-none text-[5.5rem] font-extrabold leading-none ${a.indexText} transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:-translate-y-1`}
-                  >
-                    {service.index}
-                  </span>
-
-                  {/* Top accent line — grows on hover */}
-                  <span
-                    aria-hidden
-                    className={`absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 ${a.line} transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-x-100`}
+          {services.map((service, i) => (
+            <Reveal key={service.slug} from="up" delay={(i % 3) * 0.08} className="h-full">
+              <Link
+                href={`/services#${service.slug}`}
+                className={cn(
+                  "group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1.5",
+                  accentRing[service.accent],
+                )}
+              >
+                {/* Image plate */}
+                <div className="relative aspect-16/10 w-full overflow-hidden bg-paper-2">
+                  <Image
+                    src={service.image.src}
+                    alt={service.image.alt}
+                    fill
+                    sizes="(min-width: 1024px) 30vw, (min-width: 640px) 46vw, 92vw"
+                    className="object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
                   />
 
-                  <div className="relative z-10 flex h-full flex-col">
-                    {/* Icon badge */}
+                  {/* Dark gradient scrim for the chip */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 bg-gradient-to-t from-navy-900/45 via-transparent to-transparent"
+                  />
+
+                  {/* Index chip */}
+                  <span className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-white/25 bg-navy-900/70 px-3 py-1 backdrop-blur-sm">
                     <span
-                      className={`grid size-14 place-items-center rounded-2xl transition-colors duration-300 ${a.iconWrap} ${a.iconText}`}
+                      aria-hidden
+                      className={cn("size-1.5 rounded-full", accentBar[service.accent])}
+                    />
+                    <span className="label-wide text-white/85">{service.index}</span>
+                  </span>
+                </div>
+
+                {/* Body */}
+                <div className="flex flex-1 flex-col p-6">
+                  <h3 className="text-lg font-bold tracking-tight text-navy-900 transition-colors duration-300 sm:text-xl">
+                    {service.title}
+                  </h3>
+
+                  <p className={cn("label mt-2 font-bold", accentText[service.accent])}>
+                    {service.lede}
+                  </p>
+
+                  <p className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-ink-2">
+                    {service.description}
+                  </p>
+
+                  {/* Footer row */}
+                  <div className="mt-auto flex items-center justify-between pt-5">
+                    <span className="label-wide text-ink-3">View details</span>
+                    <span
+                      className={cn(
+                        "grid size-8 place-items-center rounded-full border border-slate-200 text-ink-3 transition-all duration-300 group-hover:border-transparent",
+                        accentCta[service.accent],
+                        accentCtaText[service.accent],
+                      )}
                     >
-                      {Icon && <Icon className="size-6" />}
+                      <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
                     </span>
-
-                    <h3 className="mt-6 text-lg font-bold tracking-tight text-navy-900 transition-colors duration-300 sm:text-xl">
-                      {service.title}
-                    </h3>
-
-                    <p className="mt-2.5 line-clamp-2 text-sm leading-relaxed text-ink-2">
-                      {service.description}
-                    </p>
-
-                    {/* Footer row */}
-                    <div className="mt-auto flex items-center justify-between pt-6">
-                      <span className="label-wide text-ink-3">
-                        {service.lede}
-                      </span>
-                      <span className="grid size-8 place-items-center rounded-full border border-slate-200 text-ink-3 transition-all duration-300 group-hover:border-transparent group-hover:bg-cyan group-hover:text-white">
-                        <ArrowRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
-                      </span>
-                    </div>
                   </div>
-                </Link>
-              </Reveal>
-            );
-          })}
+                </div>
+              </Link>
+            </Reveal>
+          ))}
         </div>
       </div>
     </section>

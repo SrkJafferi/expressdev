@@ -3,7 +3,6 @@ import { Reveal } from "@/components/motion/Reveal";
 
 const cards = [
   {
-    index: "01",
     title: "Our Mission",
     body: "To empower brands with world-class print, signage and production solutions that elevate visibility, build credibility and deliver measurable impact with speed, quality and consistency.",
     accent: "cyan" as const,
@@ -21,7 +20,6 @@ const cards = [
     ),
   },
   {
-    index: "02",
     title: "Our Vision",
     body: "To become the most trusted creative production partner across the UAE and the wider Gulf — known for innovation, reliability and turning ideas into tangible brand experiences.",
     accent: "magenta" as const,
@@ -42,8 +40,9 @@ const accentStyles = {
     iconText: "text-cyan-bright",
     glow: "group-hover:shadow-[0_20px_60px_-15px_rgba(0,153,218,0.35)]",
     topBar: "from-cyan via-cyan/60 to-transparent",
-    indexText: "text-cyan-bright/30",
-    radial: "bg-[radial-gradient(circle_at_top_right,rgba(0,153,218,0.12)_0%,transparent_60%)]",
+    ringColor: "text-cyan",
+    radial: "bg-[radial-gradient(circle_at_top_right,rgba(0,153,218,0.14)_0%,transparent_60%)]",
+    dot: "bg-cyan",
   },
   magenta: {
     iconWrap: "bg-gradient-to-br from-magenta/25 to-magenta/5",
@@ -51,8 +50,9 @@ const accentStyles = {
     iconText: "text-magenta",
     glow: "group-hover:shadow-[0_20px_60px_-15px_rgba(236,39,144,0.35)]",
     topBar: "from-magenta via-magenta/60 to-transparent",
-    indexText: "text-magenta/30",
+    ringColor: "text-magenta",
     radial: "bg-[radial-gradient(circle_at_top_right,rgba(236,39,144,0.12)_0%,transparent_60%)]",
+    dot: "bg-magenta",
   },
 } as const;
 
@@ -116,18 +116,25 @@ export function MissionVision() {
                     className={`absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r ${a.topBar}`}
                   />
 
-                  {/* Radial tint inside card */}
+                  {/* Accent radial glow — always on, deepens on hover */}
                   <span
                     aria-hidden
-                    className={`pointer-events-none absolute inset-0 ${a.radial} opacity-0 transition-opacity duration-500 group-hover:opacity-100`}
+                    className={`pointer-events-none absolute inset-0 ${a.radial} opacity-60 transition-opacity duration-700 group-hover:opacity-100`}
                   />
 
-                  {/* Oversized index number */}
+                  {/* Concentric registration-ring motif — sits where the old index number was */}
                   <span
                     aria-hidden
-                    className={`pointer-events-none absolute -right-2 -top-6 select-none text-[7rem] font-extrabold leading-none ${a.indexText} transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:-translate-y-1`}
+                    className={`pointer-events-none absolute -right-10 -top-14 select-none opacity-[0.09] ${a.ringColor} transition-all duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105 group-hover:opacity-[0.14]`}
                   >
-                    {card.index}
+                    <svg viewBox="0 0 140 140" fill="none" stroke="currentColor" className="size-[10.5rem]">
+                      <circle cx="70" cy="70" r="66" strokeWidth="1" />
+                      <circle cx="70" cy="70" r="52" strokeWidth="1.6" />
+                      <circle cx="70" cy="70" r="38" strokeWidth="1" />
+                      <circle cx="70" cy="70" r="24" strokeWidth="0.75" strokeDasharray="3 5" />
+                      <path d="M70 2v12M70 126v12M2 70h12M126 70h12" strokeWidth="1.4" />
+                      <circle cx="70" cy="70" r="3" fill="currentColor" stroke="none" />
+                    </svg>
                   </span>
 
                   {/* Corner crop marks */}
@@ -155,6 +162,13 @@ export function MissionVision() {
                     <p className="mt-5 text-[0.9375rem] leading-relaxed text-white/60 sm:text-base">
                       {card.body}
                     </p>
+
+                    {/* Bottom meta — accent dot markers */}
+                    <div className="mt-7 flex items-center gap-2.5">
+                      <span className={`size-1.5 rounded-full ${a.dot}`} />
+                      <span className={`size-1.5 rounded-full ${a.dot} opacity-50`} />
+                      <span className={`size-1.5 rounded-full ${a.dot} opacity-25`} />
+                    </div>
                   </div>
                 </article>
               </Reveal>
