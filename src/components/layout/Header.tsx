@@ -205,7 +205,16 @@ export function Header() {
                   {item.label === "Services" && (
                     <div className="invisible absolute left-1/2 top-full z-50 w-[min(70vw,680px)] -translate-x-1/2 pt-5 opacity-0 transition-all duration-300 ease-[var(--ease-out-expo)] group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                       <div className="rounded-2xl border border-white/15 bg-navy-900/95 p-7 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-2xl">
-                        <p className="label mb-4 text-cyan-bright">Our Capabilities</p>
+                        <div className="mb-4 flex items-center justify-between gap-4">
+                          <p className="label text-cyan-bright">Our Capabilities</p>
+                          <Link
+                            href="/services"
+                            className="group/overview inline-flex items-center gap-1.5 text-xs font-bold tracking-widest text-white/70 uppercase transition-colors hover:text-cyan-bright"
+                          >
+                            All Services
+                            <ArrowRight className="size-3.5 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover/overview:translate-x-0.5" />
+                          </Link>
+                        </div>
                         <ul className="grid grid-cols-2 gap-x-8 gap-y-1">
                           {services.map((s) => {
                             const SIcon = serviceIcons[s.slug];
@@ -367,6 +376,16 @@ export function Header() {
                         )}
                       >
                         <div className="min-h-0 overflow-hidden">
+                          <div className="py-1">
+                            <Link
+                              href="/services"
+                              onClick={() => setOpen(false)}
+                              className="group flex items-center justify-between gap-3 rounded-lg border border-cyan/25 bg-cyan/5 py-2.5 pr-3 pl-4 text-sm font-bold text-cyan transition-colors hover:bg-cyan/10"
+                            >
+                              All Services
+                              <ArrowRight className="size-4 text-cyan transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-0.5" />
+                            </Link>
+                          </div>
                           <ul className="grid grid-cols-1 gap-y-0 pb-4 sm:grid-cols-2">
                             {services.map((s) => {
                               const SIcon = serviceIcons[s.slug];

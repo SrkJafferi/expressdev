@@ -12,12 +12,12 @@ export function ServicesIndexHero() {
     <section className="relative isolate overflow-hidden bg-navy-900 text-white">
       <div className="relative h-[58svh] min-h-[420px] w-full lg:h-[64svh]">
         <Image
-          src="/vibrantcolor.avif"
-          alt="Express Advertising print production in Ajman, UAE"
+          src="/banner1.avif"
+          alt="Express Advertising production floor — print, signage and fabrication in progress"
           fill
           priority
           sizes="100vw"
-          className="object-cover"
+          className="object-cover object-center"
         />
 
         <div aria-hidden className="absolute inset-0 hero-overlay" />
@@ -56,10 +56,10 @@ export function ServicesIndexHero() {
 
             <Reveal from="up" delay={0.1}>
               <h1 className="display-hero text-gradient-hero mt-5 overflow-visible pt-[0.06em] pb-[0.14em] pl-[0.03em] font-extrabold tracking-tight">
-                Nine capabilities.
+                Express Advertising.
                 <br />
                 <span className="text-cyan [-webkit-text-fill-color:currentColor]">
-                  One production team.
+                  One Team. Every Stage of Production.
                 </span>
               </h1>
             </Reveal>

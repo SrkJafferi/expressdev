@@ -91,17 +91,6 @@ export function ServicesIndexGrid() {
                       sizes="(min-width: 1024px) 30vw, (min-width: 640px) 46vw, 92vw"
                       className="object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
                     />
-                    {/* Index chip */}
-                    <span className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-white/25 bg-navy-900/70 px-3 py-1 backdrop-blur-sm">
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "inline-block size-1.5 rounded-full",
-                          accentBar[s.accent],
-                        )}
-                      />
-                      <span className="label-wide text-white/85">{s.index}</span>
-                    </span>
                   </div>
 
                   {/* Body */}
