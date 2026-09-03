@@ -185,36 +185,17 @@ export function Header() {
             >
               {nav.map((item) => (
                 <div key={item.href} className="group relative">
-                  {item.label === "Services" ? (
-                    // Services — dropdown-only trigger (no page navigation)
-                    <button
-                      type="button"
-                      className="block cursor-default rounded-full px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase"
-                    >
-                      {item.label}
-                    </button>
-                  ) : (
-                    <Link
-                      href={item.href}
-                      className="relative block rounded-full px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase transition-all duration-200 hover:bg-white/15 hover:text-cyan-bright"
-                    >
-                      {item.label}
-                    </Link>
-                  )}
+                  <Link
+                    href={item.href}
+                    className="relative block rounded-full px-3.5 py-1.5 text-xs font-bold tracking-widest uppercase transition-all duration-200 hover:bg-white/15 hover:text-cyan-bright"
+                  >
+                    {item.label}
+                  </Link>
 
                   {item.label === "Services" && (
                     <div className="invisible absolute left-1/2 top-full z-50 w-[min(70vw,680px)] -translate-x-1/2 pt-5 opacity-0 transition-all duration-300 ease-[var(--ease-out-expo)] group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                       <div className="rounded-2xl border border-white/15 bg-navy-900/95 p-7 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-2xl">
-                        <div className="mb-4 flex items-center justify-between gap-4">
-                          <p className="label text-cyan-bright">Our Capabilities</p>
-                          <Link
-                            href="/services"
-                            className="group/overview inline-flex items-center gap-1.5 text-xs font-bold tracking-widest text-white/70 uppercase transition-colors hover:text-cyan-bright"
-                          >
-                            All Services
-                            <ArrowRight className="size-3.5 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover/overview:translate-x-0.5" />
-                          </Link>
-                        </div>
+                        <p className="label mb-4 text-cyan-bright">Our Capabilities</p>
                         <ul className="grid grid-cols-2 gap-x-8 gap-y-1">
                           {services.map((s) => {
                             const SIcon = serviceIcons[s.slug];
@@ -341,27 +322,34 @@ export function Header() {
                     // Services — dropdown-only on desktop; on mobile it is an
                     // accordion: tap to expand the capabilities underneath.
                     <>
-                      <button
-                        type="button"
-                        onClick={() => setServicesOpen((v) => !v)}
-                        aria-expanded={servicesOpen}
-                        aria-controls="mobile-services"
-                        className="display-sm group flex w-full items-center justify-between gap-4 py-5 text-left"
-                      >
-                        <span className="flex items-center gap-3.5">
+                      <div className="flex w-full items-center gap-2">
+                        <Link
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className="display-sm group flex flex-1 items-center gap-3.5 py-5 text-left"
+                        >
                           {Icon && (
                             <Icon className="size-5 shrink-0 text-navy-300 transition-colors duration-200 group-hover:text-cyan" />
                           )}
                           {item.label}
-                        </span>
-                        <ArrowRight
-                          aria-hidden
-                          className={cn(
-                            "size-5 shrink-0 text-ink-3 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:text-cyan",
-                            servicesOpen ? "-rotate-90" : "rotate-90",
-                          )}
-                        />
-                      </button>
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => setServicesOpen((v) => !v)}
+                          aria-expanded={servicesOpen}
+                          aria-controls="mobile-services"
+                          aria-label={servicesOpen ? "Collapse services" : "Expand services"}
+                          className="grid size-10 shrink-0 place-items-center rounded-full text-ink-3 transition-colors hover:text-cyan"
+                        >
+                          <ArrowRight
+                            aria-hidden
+                            className={cn(
+                              "size-4 transition-transform duration-300 ease-[var(--ease-out-expo)]",
+                              servicesOpen ? "-rotate-90" : "rotate-90",
+                            )}
+                          />
+                        </button>
+                      </div>
 
                       {/* Capabilities — nested under the Services accordion.
                           Kept mounted so the collapse can animate, but inert
@@ -376,16 +364,6 @@ export function Header() {
                         )}
                       >
                         <div className="min-h-0 overflow-hidden">
-                          <div className="py-1">
-                            <Link
-                              href="/services"
-                              onClick={() => setOpen(false)}
-                              className="group flex items-center justify-between gap-3 rounded-lg border border-cyan/25 bg-cyan/5 py-2.5 pr-3 pl-4 text-sm font-bold text-cyan transition-colors hover:bg-cyan/10"
-                            >
-                              All Services
-                              <ArrowRight className="size-4 text-cyan transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-0.5" />
-                            </Link>
-                          </div>
                           <ul className="grid grid-cols-1 gap-y-0 pb-4 sm:grid-cols-2">
                             {services.map((s) => {
                               const SIcon = serviceIcons[s.slug];

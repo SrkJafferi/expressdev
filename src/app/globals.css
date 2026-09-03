@@ -230,6 +230,17 @@
     }
   }
 
+  /* Services index hero is a navigation hub, so the headline runs slightly
+     smaller than the full landing heroes while keeping the same ramp. */
+  .display-hero--compact {
+    font-size: clamp(2.125rem, 0.8rem + 3.8vw, 2.375rem);
+  }
+  @media (min-width: 40rem) {
+    .display-hero--compact {
+      font-size: clamp(2.125rem, 4.6vw, 4.75rem);
+    }
+  }
+
   .display-md {
     font-family: var(--font-display);
     font-weight: 700;

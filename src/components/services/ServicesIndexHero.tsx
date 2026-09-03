@@ -55,7 +55,7 @@ export function ServicesIndexHero() {
             </Reveal>
 
             <Reveal from="up" delay={0.1}>
-              <h1 className="display-hero text-gradient-hero mt-5 overflow-visible pt-[0.06em] pb-[0.14em] pl-[0.03em] font-extrabold tracking-tight">
+              <h1 className="display-hero display-hero--compact text-gradient-hero mt-5 overflow-visible pt-[0.06em] pb-[0.14em] pl-[0.03em] font-extrabold tracking-tight">
                 Express Advertising.
                 <br />
                 <span className="text-cyan [-webkit-text-fill-color:currentColor]">
@@ -67,8 +67,7 @@ export function ServicesIndexHero() {
             <Reveal from="up" delay={0.2}>
               <p className="lede mt-5 max-w-2xl text-white/90">
                 Design, print, fabrication, merchandise and installation handled
-                under one roof in Ajman — serving brands across the UAE. Pick a
-                capability below for detail, or send us the brief directly.
+                under one roof.
               </p>
             </Reveal>
           </div>
