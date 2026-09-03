@@ -7,7 +7,7 @@ export function ServicesShowcase() {
   return (
     <section
       id="services"
-      className="relative isolate scroll-mt-24 overflow-hidden bg-surface bg-[url(/product-background.avif)] bg-cover bg-center bg-no-repeat py-20 lg:py-28"
+      className="relative isolate scroll-mt-24 overflow-x-clip bg-surface bg-[url(/product-background.avif)] bg-cover bg-center bg-no-repeat py-20 lg:py-28"
     >
       {/* Oversized watermark — echoes the section label, like the clients
           page "TRUST" word */}

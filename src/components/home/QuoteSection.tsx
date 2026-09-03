@@ -200,7 +200,17 @@ function DirectionalArrow() {
 
 /* ── Circular proof-point counters — production gauge aesthetic ──────── */
 type StatAccent = "cyan" | "magenta" | "yellow";
-type Stat = { value: string; label: [string, string]; accent: StatAccent };
+type Stat = {
+  value: string;
+  label: [string, string];
+  accent: StatAccent;
+  /**
+   * Share of the ring circumference that carries the accent arc. Each
+   * proof point reads as its own gauge reading, so the fills are tuned to
+   * be clearly distinct — a perfect 5.0 rating shows the fullest ring.
+   */
+  arc: number;
+};
 
 /**
  * Proof points.
@@ -220,16 +230,19 @@ const stats: Stat[] = [
     value: reviewSummary.rating.toFixed(1),
     label: ["Google", "rating"],
     accent: "cyan",
+    arc: 0.75,
   },
   {
     value: `${reviewSummary.total}`,
     label: ["Google", "reviews"],
     accent: "magenta",
+    arc: 0.55,
   },
   {
     value: `${services.length}`,
     label: ["Capabilities", "in-house"],
     accent: "yellow",
+    arc: 0.35,
   },
 ];
 
@@ -249,7 +262,7 @@ function StatRing({ stat, index }: { stat: Stat; index: number }) {
   const reduced = useReducedMotion();
   const R = 48;
   const C = 2 * Math.PI * R;
-  const arcFraction = 0.22; // ~22% of the circumference carries the accent
+  const arcFraction = stat.arc;
 
   return (
     <motion.div
@@ -319,6 +332,158 @@ function apiErrorMessage(code: string): string {
   }
 }
 
+/* ── Required-date mini calendar ─────────────────────────────────────── */
+const MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+const WEEKDAY_HEADS = ["S", "M", "T", "W", "T", "F", "S"];
+
+function startOfLocalDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function sameDate(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/** Picker output format — keeps the brief text human-readable ("18 Sep 2026"). */
+function formatDay(d: Date): string {
+  return `${d.getDate()} ${MONTHS[d.getMonth()] ?? ""} ${d.getFullYear()}`;
+}
+
+/** Reverse of formatDay; null when the user typed free text instead. */
+function parseDay(value: string): Date | null {
+  const m = /^(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{4})$/.exec(
+    value.trim(),
+  );
+  if (!m) return null;
+  const d = new Date(Number(m[3]), MONTHS.indexOf(m[2] ?? ""), Number(m[1]));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+type CalendarGridProps = {
+  month: Date;
+  selected: Date | null;
+  today: Date;
+  onPrev: () => void;
+  onNext: () => void;
+  onPick: (day: number) => void;
+  onToday: () => void;
+  onClear: () => void;
+};
+
+/** Branded month grid — past days disabled, picker never selects in the past. */
+function CalendarGrid({
+  month,
+  selected,
+  today,
+  onPrev,
+  onNext,
+  onPick,
+  onToday,
+  onClear,
+}: CalendarGridProps) {
+  const y = month.getFullYear();
+  const m = month.getMonth();
+  const firstWeekday = new Date(y, m, 1).getDay();
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  return (
+    <div className="absolute top-full left-0 z-30 mt-2 w-[268px] max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-navy-900 p-3 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.65)]">
+      {/* Month header */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={onPrev}
+          aria-label="Previous month"
+          className="grid size-7 place-items-center rounded-md text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3 5 8l5 5" /></svg>
+        </button>
+        <span className="text-sm font-semibold tracking-wide text-white">
+          {MONTHS[m] ?? ""} {y}
+        </span>
+        <button
+          type="button"
+          onClick={onNext}
+          aria-label="Next month"
+          className="grid size-7 place-items-center rounded-md text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+        >
+          <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3l5 5-5 5" /></svg>
+        </button>
+      </div>
+
+      {/* Weekday heads */}
+      <div className="mt-2 grid grid-cols-7">
+        {WEEKDAY_HEADS.map((w) => (
+          <span key={w} className="py-1 text-center text-[10px] font-semibold text-white/35">
+            {w}
+          </span>
+        ))}
+      </div>
+
+      {/* Day grid */}
+      <div className="grid grid-cols-7 gap-y-0.5">
+        {Array.from({ length: firstWeekday }).map((_, i) => (
+          <span key={`pad-${i}`} aria-hidden />
+        ))}
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day = i + 1;
+          const d = new Date(y, m, day);
+          const past = d < today;
+          const isSelected = selected !== null && sameDate(selected, d);
+          const isToday = sameDate(today, d);
+          return (
+            <button
+              key={day}
+              type="button"
+              disabled={past}
+              onClick={() => onPick(day)}
+              aria-label={formatDay(d)}
+              aria-pressed={isSelected}
+              className={cn(
+                "flex aspect-square w-full items-center justify-center rounded-full text-[13px] font-medium transition-colors",
+                past
+                  ? "cursor-default text-white/15"
+                  : isSelected
+                    ? "bg-cyan text-navy-900"
+                    : "text-white/85 hover:bg-white/10",
+                isToday && !isSelected && "ring-1 ring-white/35 ring-inset",
+              )}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Quick actions */}
+      <div className="mt-2 flex items-center justify-between border-t border-white/10 pt-2">
+        <button
+          type="button"
+          onClick={onToday}
+          className="text-xs font-semibold text-cyan-bright transition-colors hover:text-cyan"
+        >
+          Today
+        </button>
+        <button
+          type="button"
+          onClick={onClear}
+          className="text-xs font-semibold text-white/45 transition-colors hover:text-white/80"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Quotation composer — premium production-brief aesthetic.
  *
@@ -350,6 +515,14 @@ export function QuoteSection() {
   const [errorText, setErrorText] = useState<string | null>(null);
   const [widgetError, setWidgetError] = useState<string | null>(null);
   const [honeypot, setHoneypot] = useState("");
+
+  // Required-date calendar popup
+  const [dateOpen, setDateOpen] = useState(false);
+  const [calMonth, setCalMonth] = useState(() => {
+    const n = new Date();
+    return new Date(n.getFullYear(), n.getMonth(), 1);
+  });
+  const dateWrapRef = useRef<HTMLDivElement | null>(null);
 
   const sendingRef = useRef(false);
   const tsHostRef = useRef<HTMLDivElement | null>(null);
@@ -422,6 +595,56 @@ export function QuoteSection() {
       }
     };
   }, []);
+
+  // Calendar popup — close on outside click or Escape.
+  useEffect(() => {
+    if (!dateOpen) return;
+    const onPointer = (e: PointerEvent) => {
+      if (dateWrapRef.current && !dateWrapRef.current.contains(e.target as Node)) {
+        setDateOpen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDateOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [dateOpen]);
+
+  const openCalendar = () => {
+    // Jump the calendar to the month of the value already in the field.
+    const base = parseDay(values.requiredDate) ?? new Date();
+    setCalMonth(new Date(base.getFullYear(), base.getMonth(), 1));
+    setDateOpen(true);
+  };
+
+  const pickDate = (day: number) => {
+    const d = new Date(calMonth.getFullYear(), calMonth.getMonth(), day);
+    setValues((v) => ({ ...v, requiredDate: formatDay(d) }));
+    markDirty("requiredDate");
+    setDateOpen(false);
+  };
+
+  const pickToday = () => {
+    const d = new Date();
+    setValues((v) => ({ ...v, requiredDate: formatDay(d) }));
+    markDirty("requiredDate");
+    setDateOpen(false);
+  };
+
+  const clearDate = () => {
+    setValues((v) => ({ ...v, requiredDate: "" }));
+    markDirty("requiredDate");
+    setDateOpen(false);
+  };
+
+  // Re-derived each render for the picker grid.
+  const todayStart = startOfLocalDay(new Date());
+  const pickedDate = parseDay(values.requiredDate);
 
   const submitByEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -712,21 +935,65 @@ export function QuoteSection() {
                         <FieldIcon name={f.key} />
                         {f.label}
                       </span>
-                      <input
-                        ref={f.key === "email" ? emailRef : undefined}
-                        type={f.type ?? "text"}
-                        inputMode={f.type === "email" ? "email" : f.key === "quantity" || f.key === "size" ? "text" : undefined}
-                        autoComplete={f.key === "email" ? "email" : undefined}
-                        value={values[f.key]}
-                        placeholder={f.placeholder}
-                        aria-invalid={f.key === "email" && emailError ? true : undefined}
-                        aria-describedby={f.key === "email" && emailError ? "quote-email-error" : undefined}
-                        onChange={(e) => {
-                          setValues((v) => ({ ...v, [f.key]: e.target.value }));
-                          markDirty(f.key);
-                        }}
-                        className={f.key === "email" && emailError ? inputErrorClass : inputClass}
-                      />
+                      {f.key === "requiredDate" ? (
+                        <div ref={dateWrapRef} className="relative mt-2.5">
+                          <input
+                            type="text"
+                            value={values.requiredDate}
+                            placeholder={f.placeholder}
+                            onChange={(e) => {
+                              setValues((v) => ({ ...v, requiredDate: e.target.value }));
+                              markDirty("requiredDate");
+                            }}
+                            onFocus={openCalendar}
+                            onClick={openCalendar}
+                            className={cn(inputClass, "cursor-pointer pr-11")}
+                          />
+                          <button
+                            type="button"
+                            aria-label={dateOpen ? "Close calendar" : "Open calendar"}
+                            aria-expanded={dateOpen}
+                            onClick={() => {
+                              if (dateOpen) setDateOpen(false);
+                              else openCalendar();
+                            }}
+                            className="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-md text-white/35 transition-colors hover:bg-white/10 hover:text-cyan-bright"
+                          >
+                            <svg className="size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="2" y="3" width="12" height="11" rx="1" />
+                              <path d="M2 7h12M5 1v4M11 1v4" />
+                            </svg>
+                          </button>
+                          {dateOpen && (
+                            <CalendarGrid
+                              month={calMonth}
+                              selected={pickedDate}
+                              today={todayStart}
+                              onPrev={() => setCalMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
+                              onNext={() => setCalMonth((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
+                              onPick={pickDate}
+                              onToday={pickToday}
+                              onClear={clearDate}
+                            />
+                          )}
+                        </div>
+                      ) : (
+                        <input
+                          ref={f.key === "email" ? emailRef : undefined}
+                          type={f.type ?? "text"}
+                          inputMode={f.type === "email" ? "email" : f.key === "quantity" || f.key === "size" ? "text" : undefined}
+                          autoComplete={f.key === "email" ? "email" : undefined}
+                          value={values[f.key]}
+                          placeholder={f.placeholder}
+                          aria-invalid={f.key === "email" && emailError ? true : undefined}
+                          aria-describedby={f.key === "email" && emailError ? "quote-email-error" : undefined}
+                          onChange={(e) => {
+                            setValues((v) => ({ ...v, [f.key]: e.target.value }));
+                            markDirty(f.key);
+                          }}
+                          className={f.key === "email" && emailError ? inputErrorClass : inputClass}
+                        />
+                      )}
                       {f.key === "email" && emailError && (
                         <p id="quote-email-error" role="alert" className="mt-1.5 text-xs font-medium text-magenta">
                           {emailError}
