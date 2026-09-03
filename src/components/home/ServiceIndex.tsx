@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import type { Service } from "@/data/services";
+import { serviceHref, type Service } from "@/data/services";
 import { ArrowUpRight } from "@/components/ui/Icons";
 import {
   PrinterIcon,
@@ -32,6 +32,15 @@ const accentBar = {
   magenta: "bg-magenta",
   navy: "bg-navy",
   yellow: "bg-yellow",
+} as const;
+
+const accentPillHover = {
+  cyan: "hover:border-cyan hover:bg-cyan/5 hover:text-cyan active:border-cyan active:bg-cyan/10 active:text-cyan",
+  magenta:
+    "hover:border-magenta hover:bg-magenta/5 hover:text-magenta active:border-magenta active:bg-magenta/10 active:text-magenta",
+  navy: "hover:border-navy hover:bg-navy/5 hover:text-navy active:border-navy active:bg-navy/10 active:text-navy",
+  yellow:
+    "hover:border-yellow hover:bg-yellow/5 hover:text-yellow active:border-yellow active:bg-yellow/10 active:text-yellow",
 } as const;
 
 const serviceIcons = {
@@ -148,15 +157,24 @@ export function ServiceIndex({ services }: { services: Service[] }) {
           </div>
 
           {current && (
-            <ul className="mt-6 flex flex-wrap gap-x-2 gap-y-1.5">
-              {current.items.slice(0, 6).map((item) => (
-                <li
-                  key={item}
-                  className="label-wide rounded-full border border-rule px-3 py-1.5 text-ink-3"
-                >
-                  {item}
-                </li>
-              ))}
+            <ul className="mt-6 grid grid-cols-2 gap-x-2 gap-y-1.5">
+              {current.items.slice(0, 6).map((item) => {
+                const Icon =
+                  serviceIcons[current.slug as keyof typeof serviceIcons];
+                return (
+                  <Link
+                    key={item}
+                    href={serviceHref(current.slug)}
+                    className={cn(
+                      "label-wide flex items-center justify-center gap-1.5 rounded-full border border-rule px-3 py-1.5 text-center text-ink-3 transition-colors duration-300",
+                      accentPillHover[current.accent],
+                    )}
+                  >
+                    <Icon className="size-3 shrink-0" />
+                    {item}
+                  </Link>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -174,29 +192,29 @@ export function ServiceIndex({ services }: { services: Service[] }) {
               ref={(el) => {
                 rowRefs.current[i] = el;
               }}
-              className="scroll-mt-28"
+              className={cn(
+                "group relative scroll-mt-28 border-t border-rule last:border-b",
+                serviceBg[s.slug as keyof typeof serviceBg],
+              )}
             >
+              {/* Animated accent rail on the active / hovered row */}
+              <span
+                aria-hidden
+                className={cn(
+                  "absolute left-0 top-0 h-full w-0.5 origin-top scale-y-0 transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-y-100",
+                  isActive && "scale-y-100",
+                  accentBar[s.accent],
+                )}
+              />
+
               <Link
                 href={`/#service-${s.slug}`}
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
                 onFocus={() => setHovered(i)}
                 onBlur={() => setHovered(null)}
-                className={cn(
-                  "group relative block border-t border-rule py-7 last:border-b lg:py-8",
-                  serviceBg[s.slug as keyof typeof serviceBg],
-                )}
+                className="block py-7 lg:py-8"
               >
-                {/* Animated accent rail on the active / hovered row */}
-                <span
-                  aria-hidden
-                  className={cn(
-                    "absolute left-0 top-0 h-full w-0.5 origin-top scale-y-0 transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-y-100",
-                    isActive && "scale-y-100",
-                    accentBar[s.accent],
-                  )}
-                />
-
                 <div className="flex items-baseline gap-4 pl-4 lg:gap-6 lg:pl-6">
                   {(() => {
                     const Icon = serviceIcons[s.slug as keyof typeof serviceIcons];
@@ -220,29 +238,6 @@ export function ServiceIndex({ services }: { services: Service[] }) {
                     >
                       {s.title}
                     </h3>
-                    <p className="body-sm mt-3 max-w-xl">{s.description}</p>
-
-                    {/* Inline image for small screens */}
-                    <div className="plate relative mt-5 aspect-16/9 w-full overflow-hidden rounded-2xl lg:hidden">
-                      <Image
-                        src={s.image.src}
-                        alt={s.image.alt}
-                        fill
-                        sizes="100vw"
-                        className="object-cover"
-                      />
-                    </div>
-
-                    <ul className="mt-4 flex flex-wrap gap-x-2 gap-y-1.5 lg:hidden">
-                      {s.items.slice(0, 4).map((item) => (
-                        <li
-                          key={item}
-                          className="label-wide rounded-full border border-rule px-3 py-1.5 text-ink-3"
-                        >
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                   <ArrowUpRight
                     className={cn(
@@ -251,7 +246,49 @@ export function ServiceIndex({ services }: { services: Service[] }) {
                     )}
                   />
                 </div>
+
+                {/* Body — desktop stays tucked under the title at the same
+                    indent; on small screens it runs full width beneath the
+                    icon + title header line so no gutter is wasted on the
+                    left or right of the copy, image or tags. */}
+                <p className="body-sm mt-3 max-w-xl px-4 lg:px-0 lg:pl-[4.5rem]">
+                  {s.description}
+                </p>
               </Link>
+
+              {/* Inline image + tags for small screens. Tags are real links
+                  to the service page, so they live outside the row anchor. */}
+              <div className="mt-5 px-4 pb-7 lg:hidden">
+                <div className="plate relative aspect-16/9 w-full overflow-hidden rounded-2xl">
+                  <Image
+                    src={s.image.src}
+                    alt={s.image.alt}
+                    fill
+                    sizes="100vw"
+                    className="object-cover"
+                  />
+                </div>
+
+                <ul className="mt-4 grid grid-cols-2 gap-x-2 gap-y-1.5">
+                  {s.items.slice(0, 4).map((item) => {
+                    const Icon =
+                      serviceIcons[s.slug as keyof typeof serviceIcons];
+                    return (
+                      <Link
+                        key={item}
+                        href={serviceHref(s.slug)}
+                        className={cn(
+                          "label-wide flex items-center justify-center gap-1.5 rounded-full border border-rule px-3 py-1.5 text-center text-ink-3 transition-colors duration-300",
+                          accentPillHover[s.accent],
+                        )}
+                      >
+                        <Icon className="size-3 shrink-0" />
+                        {item}
+                      </Link>
+                    );
+                  })}
+                </ul>
+              </div>
             </li>
           );
         })}
