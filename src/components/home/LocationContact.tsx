@@ -18,10 +18,12 @@ const hours = [
   { day: "Sunday", time: "2:00 pm – 10:00 pm" },
 ];
 
-// Google Maps embed for the verified business listing — no API key required.
-// Query is the business name + city only; never append another brand's name.
+// Google Maps embed — no API key required. Query uses the verified
+// coordinates of the Express Advertising listing (from its official
+// Google Maps place link) so the marker always lands on the actual
+// Ajman office — never an unrelated map result.
 const MAP_EMBED =
-  "https://maps.google.com/maps?q=Express%20Advertising%20Ajman%20UAE&t=m&z=17&output=embed&iwloc=near";
+  "https://maps.google.com/maps?q=25.4093044,55.4428052&z=18&output=embed&iwloc=near";
 
 /**
  * Visit the studio — a premium closing composition: a large lazy-loaded Google

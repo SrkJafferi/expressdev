@@ -53,10 +53,11 @@ export function HeroSlider() {
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      {/* dvh-based height on mobile (survives iOS browser chrome show/hide);
-          desktop keeps the approved 88svh. Content bottom padding reserves
-          room for the pagination row so CTAs never collide with controls. */}
-      <div className="relative h-[calc(100dvh-5rem)] min-h-[540px] w-full lg:h-[88svh] lg:min-h-[560px]">
+      {/* Mobile-only top scrim — guarantees white header controls read over
+          bright hero imagery while the header stays a true overlay.
+          dvh-based height on mobile (survives iOS browser chrome);
+          desktop keeps the approved 88svh. */}
+      <div className="relative h-[100dvh] min-h-[560px] w-full lg:h-[88svh] lg:min-h-[560px]">
         {/* Slides — crossfade with a slow ken-burns scale.
             initial={false}: the first slide paints fully visible immediately
             (no dark start), transitions for later slides are unchanged. */}
@@ -108,9 +109,21 @@ export function HeroSlider() {
           <span className="hero-float absolute right-[14%] top-[52%] size-1.5 rounded-full bg-yellow/90 shadow-[0_0_10px_rgba(255,241,18,0.8)]" />
         </div>
 
-        {/* Content */}
-        <div className="relative z-20 flex h-full items-end pb-24 lg:items-center lg:pb-0">
-          <div className="shell w-full">
+        {/* Mobile top scrim — sits under the fixed header so the eyebrow
+            zone never competes with a bright slide. Desktop keeps the
+            approved full-slide overlay only. */}
+        <div
+          aria-hidden
+          className="absolute inset-x-0 top-0 z-10 h-32 bg-gradient-to-b from-navy-900/75 via-navy-900/30 to-transparent lg:hidden"
+        />
+
+        {/* Content — mobile bottom-anchored with explicit header offset so
+            the eyebrow can never slide under the fixed header */}
+        <div className="relative z-20 flex h-full items-end pb-24 pt-[calc(var(--header-mobile-height)+1rem)] lg:items-center lg:pb-0 lg:pt-0">
+          {/* Desktop only: nudge the centred block down 25px so the eyebrow
+              keeps clear breathing room below the fixed header. Mobile is
+              bottom-anchored and already has ample space above. */}
+          <div className="shell w-full lg:translate-y-[25px]">
             <div>
               {/* initial={false}: slide 1 content is fully visible on SSR
                   paint and stays mounted through hydration — no entrance
@@ -124,7 +137,7 @@ export function HeroSlider() {
                   exit={reduced ? { opacity: 1 } : { opacity: 0, y: -16 }}
                   transition={{ duration: reduced ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] }}
                 >
-                  <div className="mt-[50px] flex items-center gap-3">
+                  <div className="flex items-center gap-3">
                     <span
                       aria-hidden
                       className={cn("h-1 w-10", accentBar[slide.accent])}

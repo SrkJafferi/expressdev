@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { QuoteButton, WhatsAppButton } from "@/components/ui/Cta";
+import { QuoteInlineForm } from "@/components/ui/QuoteInlineForm";
 import { ArrowUpRight } from "@/components/ui/Icons";
 import { site } from "@/data/site";
 import { Reveal } from "@/components/motion/Reveal";
@@ -55,10 +55,7 @@ export function LfQuoteCta() {
           </Reveal>
 
           <Reveal from="up" delay={0.3}>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-              <QuoteButton variant="cyan" label="Get a Quote" />
-              <WhatsAppButton variant="invert" label="WhatsApp Us" />
-            </div>
+            <QuoteInlineForm service="Large Format Printing" />
           </Reveal>
 
           <Reveal from="up" delay={0.4}>

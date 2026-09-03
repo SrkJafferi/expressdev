@@ -71,6 +71,12 @@
     border-color: var(--color-rule);
   }
 
+  /* Fixed header height on mobile — hero content and the mobile drawer
+     offset against this instead of magic numbers. */
+  :root {
+    --header-mobile-height: 5.25rem;
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
     /* Matches the hero first paint — prevents a black/unstyled canvas flash
@@ -78,11 +84,11 @@
        canvas when no background is set). */
     background-color: var(--color-navy-900);
     color-scheme: light;
-    /* Safety layer after component-level overflow fixes: clip (not hidden)
-       so position: sticky children keep working. Smooth scrolling is
-       handled by Lenis (SmoothScroll provider) — keep CSS scroll-behavior
-       off to avoid double smoothing. */
-    overflow-x: clip;
+    /* NO overflow-x rules here on purpose: an overflow value on html/body
+       breaks position: fixed on mobile browsers (the header then scrolls
+       away with the page). Horizontal overflow is clipped at the correct
+       component boundaries instead — every section/carousel owns its own
+       overflow clipping, and the footer clips its decorative blobs. */
   }
 
   body {
@@ -93,7 +99,7 @@
     font-feature-settings: "ss01", "cv01";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    overflow-x: clip;
+    /* NO overflow-x rule here either — see html comment above. */
   }
 
   /* iOS Safari: keep form controls ≥16px on small screens so focusing a

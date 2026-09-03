@@ -2,18 +2,65 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactElement } from "react";
 import { nav, contact, site } from "@/data/site";
 import { services, serviceHref } from "@/data/services";
 import { Logo } from "@/components/ui/Logo";
 import { QuoteButton } from "@/components/ui/Cta";
-import { ArrowUpRight, WhatsAppIcon } from "@/components/ui/Icons";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  PhoneIcon,
+  PinIcon,
+  WhatsAppIcon,
+} from "@/components/ui/Icons";
+import {
+  AboutIcon,
+  ContactIcon,
+  CrosshairIcon,
+  GiftIcon,
+  GridIcon,
+  HomeIcon,
+  ImageIcon,
+  LayersIcon,
+  MonitorIcon,
+  PenToolIcon,
+  PrinterIcon,
+  ScanLineIcon,
+  SignpostIcon,
+  StoreIcon,
+} from "@/components/ui/FooterIcons";
 import { whatsappUrl } from "@/lib/whatsapp";
 import { cn } from "@/lib/cn";
+
+type IconType = (props: { className?: string }) => ReactElement;
+
+/** Nav href → line icon (same language as the footer). */
+const navIcons: Record<string, IconType> = {
+  "/": HomeIcon,
+  "/about": AboutIcon,
+  "/services": GridIcon,
+  "/clients": ImageIcon,
+  "/contact": ContactIcon,
+};
+
+/** Service slug → line icon (same language as the footer). */
+const serviceIcons: Record<string, IconType> = {
+  "printing-services": PrinterIcon,
+  signage: SignpostIcon,
+  "large-format-printing": ScanLineIcon,
+  "promotional-items": GiftIcon,
+  "brand-collateral": LayersIcon,
+  "retail-events-exhibition": StoreIcon,
+  "cnc-laser-cutting": CrosshairIcon,
+  "digital-design": PenToolIcon,
+  "it-services": MonitorIcon,
+};
 
 export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -22,6 +69,14 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Let the floating dock (and anything else) know when the mobile menu is
+  // open so fixed elements can yield to it.
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("ea:mobile-menu", { detail: open }),
+    );
+  }, [open]);
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -29,11 +84,19 @@ export function Header() {
     };
   }, [open]);
 
+  // Re-collapse the Services accordion whenever the drawer closes so the
+  // next open starts from the top-level menu again.
+  useEffect(() => {
+    if (!open) setServicesOpen(false);
+  }, [open]);
+
   return (
     <>
-      {/* Fixed overlay stack: utility bar + header. Sits over the hero at the
-          top of the page (transparent), then becomes a solid light bar on scroll. */}
-      <div className="fixed inset-x-0 top-0 z-50">
+      {/* Fixed overlay stack: utility bar + header. Explicit left/right/width
+          (not just inset-x) locks it to the real viewport even if some other
+          element momentarily widens the document on mobile. No transformed
+          ancestor above this — it renders directly under <body>. */}
+      <div className="fixed left-0 right-0 top-0 z-50 w-full max-w-full">
         {/* Utility bar — collapses away once the user scrolls past the hero */}
         <div
           className={cn(
@@ -43,7 +106,7 @@ export function Header() {
         >
           <div className="shell flex h-9 items-center justify-between">
             <p className="label-wide text-white/50">
-              Printing · Signage · Large Format · Brand Production — Ajman, UAE
+              Printing · Signage · Large Format · Brand Production
             </p>
             <div className="flex items-center gap-6">
               <a
@@ -70,10 +133,11 @@ export function Header() {
           "relative border-b transition-all duration-500 ease-[var(--ease-out-expo)]",
           scrolled
             ? "border-rule/80 bg-paper/95 text-ink shadow-sm backdrop-blur-md"
-            : // Mobile: keep a translucent navy scrim at the very top so the
-              // white logo + controls stay visible over ANY hero imagery.
-              // Desktop keeps the approved transparent treatment.
-              "border-transparent text-white max-lg:bg-navy-900/60 max-lg:shadow-sm max-lg:backdrop-blur-md",
+            : // True overlay at the top of every page (approved behaviour):
+              // fully transparent so the hero/banner shows through. Contrast
+              // for the white controls comes from each page's own banner/
+              // hero top scrim (e.g. HeroSlider's mobile top gradient).
+              "border-transparent bg-transparent text-white",
         )}
       >
         <div
@@ -143,16 +207,22 @@ export function Header() {
                       <div className="rounded-2xl border border-white/15 bg-navy-900/95 p-7 shadow-[0_20px_50px_rgba(0,0,0,0.4)] backdrop-blur-2xl">
                         <p className="label mb-4 text-cyan-bright">Our Capabilities</p>
                         <ul className="grid grid-cols-2 gap-x-8 gap-y-1">
-                          {services.map((s) => (
-                            <li key={s.slug}>
-                              <Link
-                                href={serviceHref(s.slug)}
-                                className="group/i flex items-center border-b border-white/10 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-cyan-bright"
-                              >
-                                <span className="flex-1">{s.title}</span>
-                              </Link>
-                            </li>
-                          ))}
+                          {services.map((s) => {
+                            const SIcon = serviceIcons[s.slug];
+                            return (
+                              <li key={s.slug}>
+                                <Link
+                                  href={serviceHref(s.slug)}
+                                  className="group/i flex items-center gap-2.5 border-b border-white/10 py-2.5 text-sm font-medium text-white/85 transition-colors hover:text-cyan-bright"
+                                >
+                                  {SIcon && (
+                                    <SIcon className="size-4 shrink-0 text-cyan-bright/70 transition-colors duration-200 group-hover/i:text-cyan-bright" />
+                                  )}
+                                  <span className="flex-1">{s.title}</span>
+                                </Link>
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
                     </div>
@@ -178,7 +248,8 @@ export function Header() {
             />
           </div>
 
-          {/* Mobile controls */}
+          {/* Mobile controls — glass chips so they read over ANY slide
+              (bright or dark) without an opaque header bar */}
           <div className="flex items-center gap-2 lg:hidden">
             <a
               href={whatsappUrl()}
@@ -186,10 +257,10 @@ export function Header() {
               rel="noopener noreferrer"
               aria-label="WhatsApp Express Advertising"
               className={cn(
-                "grid size-11 place-items-center border",
+                "grid size-11 place-items-center rounded-full border backdrop-blur-md",
                 scrolled
                   ? "border-rule text-[#128c7e]"
-                  : "border-white/30 text-white",
+                  : "border-white/40 bg-navy-900/35 text-white",
               )}
             >
               <WhatsAppIcon className="size-5" />
@@ -201,22 +272,25 @@ export function Header() {
               aria-controls="mobile-menu"
               aria-label={open ? "Close menu" : "Open menu"}
               className={cn(
-                "grid size-11 place-items-center border",
-                open || scrolled ? "border-rule" : "border-white/30",
+                "grid size-11 place-items-center rounded-full border backdrop-blur-md",
+                open || scrolled ? "border-rule" : "border-white/40 bg-navy-900/35 text-white",
               )}
             >
               <span aria-hidden className="relative block h-3 w-5">
+                {/* Icon stays white over the dark hero while the drawer is
+                    open at the top of the page; once the header is sticky
+                    (paper background) it switches to ink. */}
                 <span
                   className={cn(
                     "absolute left-0 h-px w-full transition-all duration-300 ease-[var(--ease-out-expo)]",
-                    open || scrolled ? "bg-ink" : "bg-white",
+                    scrolled ? "bg-ink" : "bg-white",
                     open ? "top-1.5 rotate-45" : "top-0",
                   )}
                 />
                 <span
                   className={cn(
                     "absolute left-0 h-px w-full transition-all duration-300 ease-[var(--ease-out-expo)]",
-                    open || scrolled ? "bg-ink" : "bg-white",
+                    scrolled ? "bg-ink" : "bg-white",
                     open ? "top-1.5 -rotate-45" : "top-3",
                   )}
                 />
@@ -246,46 +320,93 @@ export function Header() {
       <div
         id="mobile-menu"
         hidden={!open}
-        className="fixed inset-x-0 bottom-0 top-[calc(5rem+2px)] z-40 overflow-y-auto overscroll-contain bg-paper pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 top-[calc(var(--header-mobile-height)+2px)] z-40 overflow-y-auto overscroll-contain bg-paper pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         <nav aria-label="Mobile" className="shell py-8">
           <ul className="border-t border-rule">
-            {nav.map((item) => (
-              <li key={item.href} className="border-b border-rule">
-                {item.label === "Services" ? (
-                  // Services — dropdown-only on desktop; capabilities listed below
-                  <span className="display-sm block py-5 text-ink-3">
-                    {item.label}
-                  </span>
-                ) : (
-                  <Link
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="display-sm block py-5"
-                  >
-                    {item.label}
-                  </Link>
-                )}
-              </li>
-            ))}
+            {nav.map((item) => {
+              const Icon = navIcons[item.href];
+              return (
+                <li key={item.href} className="border-b border-rule">
+                  {item.label === "Services" ? (
+                    // Services — dropdown-only on desktop; on mobile it is an
+                    // accordion: tap to expand the capabilities underneath.
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setServicesOpen((v) => !v)}
+                        aria-expanded={servicesOpen}
+                        aria-controls="mobile-services"
+                        className="display-sm group flex w-full items-center justify-between gap-4 py-5 text-left"
+                      >
+                        <span className="flex items-center gap-3.5">
+                          {Icon && (
+                            <Icon className="size-5 shrink-0 text-navy-300 transition-colors duration-200 group-hover:text-cyan" />
+                          )}
+                          {item.label}
+                        </span>
+                        <ArrowRight
+                          aria-hidden
+                          className={cn(
+                            "size-5 shrink-0 text-ink-3 transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:text-cyan",
+                            servicesOpen ? "-rotate-90" : "rotate-90",
+                          )}
+                        />
+                      </button>
+
+                      {/* Capabilities — nested under the Services accordion.
+                          Kept mounted so the collapse can animate, but inert
+                          (and visually hidden via grid-rows-[0fr]) while
+                          closed so its links are never tabbable. */}
+                      <div
+                        id="mobile-services"
+                        inert={!servicesOpen}
+                        className={cn(
+                          "grid transition-[grid-template-rows] duration-300 ease-[var(--ease-out-expo)]",
+                          servicesOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+                        )}
+                      >
+                        <div className="min-h-0 overflow-hidden">
+                          <ul className="grid grid-cols-1 gap-y-0 pb-4 sm:grid-cols-2">
+                            {services.map((s) => {
+                              const SIcon = serviceIcons[s.slug];
+                              return (
+                                <li key={s.slug} className="border-b border-rule/70">
+                                  <Link
+                                    href={serviceHref(s.slug)}
+                                    onClick={() => setOpen(false)}
+                                    className="group flex items-center gap-2.5 py-3 text-sm font-medium"
+                                  >
+                                    {SIcon && (
+                                      <SIcon className="size-4 shrink-0 text-navy-300 transition-colors duration-200 group-hover:text-cyan" />
+                                    )}
+                                    {s.title}
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="display-sm group flex items-center gap-3.5 py-5"
+                    >
+                      {Icon && (
+                        <Icon className="size-5 shrink-0 text-navy-300 transition-colors duration-200 group-hover:text-cyan" />
+                      )}
+                      {item.label}
+                    </Link>
+                  )}
+                </li>
+              );
+            })}
           </ul>
 
-          <p className="label mt-10 mb-4 text-ink-3">Capabilities</p>
-          <ul className="grid grid-cols-1 gap-y-0 sm:grid-cols-2">
-            {services.map((s) => (
-              <li key={s.slug} className="border-b border-rule/70">
-                <Link
-                  href={serviceHref(s.slug)}
-                  onClick={() => setOpen(false)}
-                  className="flex items-center py-3 text-sm font-medium"
-                >
-                  {s.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-10 flex flex-col gap-3">
+          <div className="mt-8 flex flex-col gap-3">
             <QuoteButton className="w-full" variant="cyan" />
             <a
               href={whatsappUrl()}
@@ -307,13 +428,36 @@ export function Header() {
             </a>
           </div>
 
-          <p className="body-sm mt-8">
-            {contact.addressOneLine}
-            <br />
-            <a href={`tel:${contact.phoneE164}`} className="text-navy">
-              {contact.phoneDisplay}
+          {/* Location + phone — icon rows and a tappable call card */}
+          <div className="mt-8 space-y-3 border-t border-rule pt-6">
+            <p className="body-sm flex items-start gap-3 text-ink-2">
+              <PinIcon aria-hidden className="mt-1 size-4 shrink-0 text-navy" />
+              <span>{contact.addressOneLine}</span>
+            </p>
+            <a
+              href={`tel:${contact.phoneE164}`}
+              className="group flex w-full items-center gap-3.5 rounded-xl border border-navy-100 bg-surface px-4 py-3 shadow-xs transition-colors duration-200 hover:border-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/60"
+            >
+              <span
+                aria-hidden
+                className="grid size-10 shrink-0 place-items-center rounded-full bg-navy-100 text-navy transition-colors duration-200 group-hover:bg-cyan group-hover:text-white"
+              >
+                <PhoneIcon className="size-4" />
+              </span>
+              <span className="flex min-w-0 flex-col leading-tight">
+                <span className="label-wide text-[10px] text-ink-3">
+                  Call us directly
+                </span>
+                <span className="text-sm font-bold tracking-wide text-navy-900 transition-colors duration-200 group-hover:text-cyan">
+                  {contact.phoneDisplay}
+                </span>
+              </span>
+              <ArrowUpRight
+                aria-hidden
+                className="ml-auto size-4 shrink-0 text-navy-300 transition-all duration-300 ease-[var(--ease-out-expo)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-cyan"
+              />
             </a>
-          </p>
+          </div>
         </nav>
       </div>
     </>

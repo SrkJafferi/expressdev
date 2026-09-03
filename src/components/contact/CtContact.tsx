@@ -1,21 +1,58 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { Reveal } from "@/components/motion/Reveal";
-import { contact, site } from "@/data/site";
+import { contact } from "@/data/site";
 import { whatsappUrl } from "@/lib/whatsapp";
 
 /**
  * Contact overview — contact method cards (left) + enquiry form (right).
  *
- * SUBMISSION ARCHITECTURE: the project has no enquiry backend/API route,
- * so `submitEnquiry()` is the single isolated integration point — it
- * currently hands the structured enquiry to WhatsApp (the same verified
- * channel used across the site) and exposes clear success/failure states.
- * When a backend becomes available, only this function needs to change.
+ * SUBMISSION: the form posts to /api/quote — the same secure server-side
+ * pipeline as the homepage quote form. Zod validation, honeypot and
+ * Cloudflare Turnstile on the server, then a branded brief email to the
+ * team plus a confirmation to the customer via Resend. No mailto, no
+ * client-side mail, no secrets in the browser. WhatsApp remains available
+ * as a manual fallback link.
  */
+
+/* ── Cloudflare Turnstile ─────────────────────────────────────────────── */
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+type TurnstileWidget = {
+  render: (
+    el: HTMLElement,
+    options: {
+      sitekey: string;
+      theme?: string;
+      size?: string;
+      callback?: (token: string) => void;
+      "expired-callback"?: () => void;
+      "error-callback"?: () => void;
+    },
+  ) => string;
+  reset: (widgetId?: string) => void;
+  remove: (widgetId: string) => void;
+  getResponse: (widgetId?: string) => string;
+};
+
+function getTurnstile(): TurnstileWidget | undefined {
+  return (window as Window & { turnstile?: TurnstileWidget }).turnstile;
+}
+
+function apiErrorMessage(code: string): string {
+  switch (code) {
+    case "captcha":
+      return "Security check could not be verified. Please complete the checkbox and try again.";
+    case "invalid":
+      return "Please review your details — one or more fields were not accepted.";
+    case "send_failed":
+      return "We could not send your enquiry right now. Please try again in a moment, or reach us on WhatsApp.";
+    default:
+      return "Something went wrong while sending your enquiry. Please try again, or reach us on WhatsApp.";
+  }
+}
 
 const SERVICES = [
   "Printing Services",
@@ -122,43 +159,46 @@ function validate(values: FormValues) {
   return errors;
 }
 
-function buildEnquiryMessage(values: FormValues): string {
-  const lines = [
-    "Hello Express Advertising,",
-    "",
-    `I'd like to enquire about: ${values.service}`,
-    "",
-    `Name: ${values.fullName}`,
-    values.company ? `Company: ${values.company}` : "",
-    `Email: ${values.email}`,
-    `Phone / WhatsApp: ${values.phone}`,
-    values.projectLocation ? `Project location: ${values.projectLocation}` : "",
-    values.quantity ? `Estimated quantity: ${values.quantity}` : "",
-    `Preferred contact method: ${values.preferredContact}`,
-    "",
-    `Project details: ${values.details}`,
-  ];
-  return lines.filter((l) => l !== "").join("\n");
-}
-
 /**
- * ISOLATED SUBMISSION POINT — replace the body with a fetch() to a real
- * API route when a backend becomes available. Currently hands the enquiry
- * to WhatsApp (verified channel) and reports the outcome.
+ * Post the enquiry to /api/quote — server-side zod validation, honeypot
+ * and Turnstile enforcement happen there; emails are sent by the server.
+ * Returns a machine-readable error code when the request fails.
  */
-function submitEnquiry(values: FormValues): Promise<{ ok: boolean }> {
-  return new Promise((resolve) => {
-    try {
-      const url = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(
-        buildEnquiryMessage(values),
-      )}`;
-      const win = window.open(url, "_blank", "noopener,noreferrer");
-      // Popup blockers return null — surface a clear failure state.
-      resolve({ ok: Boolean(win) });
-    } catch {
-      resolve({ ok: false });
-    }
-  });
+async function submitEnquiry(values: FormValues, token: string, honeypot: string): Promise<{ ok: boolean; error?: string }> {
+  let res: Response;
+  try {
+    res = await fetch("/api/quote", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        service: values.service,
+        name: values.fullName,
+        company: values.company,
+        email: values.email,
+        phone: values.phone,
+        details: values.details,
+        quantity: values.quantity,
+        location: values.projectLocation,
+        preferredContact: values.preferredContact,
+        // Fields this form does not collect — the email template shows "—".
+        size: "",
+        material: "",
+        requiredDate: "",
+        notes: "",
+        website: honeypot,
+        token,
+      }),
+    });
+  } catch {
+    return { ok: false, error: "network" };
+  }
+  const data = (await res.json().catch(() => null)) as
+    | { ok?: boolean; error?: string }
+    | null;
+  if (!res.ok || !data?.ok) {
+    return { ok: false, error: data?.error ?? "internal" };
+  }
+  return { ok: true };
 }
 
 const inputBase =
@@ -168,6 +208,13 @@ export function CtContact() {
   const [values, setValues] = useState<FormValues>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof FormValues, string>>>({});
   const [status, setStatus] = useState<Status>("idle");
+  const [errorText, setErrorText] = useState<string | null>(null);
+  const [widgetError, setWidgetError] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState("");
+
+  const sendingRef = useRef(false);
+  const tsHostRef = useRef<HTMLDivElement | null>(null);
+  const tokenRef = useRef("");
 
   // Quick-enquiry type cards dispatch this event to preselect a service.
   useEffect(() => {
@@ -182,6 +229,65 @@ export function CtContact() {
     return () => window.removeEventListener("ea:select-service", onPrefill);
   }, []);
 
+  // Mount Cloudflare Turnstile once the client has rendered.
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
+    let disposed = false;
+    let widgetId: string | undefined;
+
+    const loadScript = () =>
+      new Promise<void>((resolve, reject) => {
+        if (getTurnstile()) {
+          resolve();
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Turnstile script failed to load"));
+        document.head.appendChild(script);
+      });
+
+    (async () => {
+      try {
+        await loadScript();
+        if (disposed || !tsHostRef.current) return;
+        const turnstile = getTurnstile();
+        if (!turnstile) return;
+        widgetId = turnstile.render(tsHostRef.current, {
+          sitekey: TURNSTILE_SITE_KEY,
+          theme: "light",
+          callback: (token) => {
+            tokenRef.current = token;
+          },
+          "expired-callback": () => {
+            tokenRef.current = "";
+          },
+          "error-callback": () => {
+            tokenRef.current = "";
+          },
+        });
+      } catch {
+        if (!disposed) setWidgetError("Security check could not be loaded on this device.");
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      if (widgetId) {
+        const turnstile = getTurnstile();
+        if (turnstile) {
+          try {
+            turnstile.remove(widgetId);
+          } catch {
+            // widget may already be gone
+          }
+        }
+      }
+    };
+  }, []);
+
   const set =
     (key: keyof FormValues) =>
     (
@@ -191,20 +297,50 @@ export function CtContact() {
     ) => {
       setValues((v) => ({ ...v, [key]: e.target.value }));
       if (errors[key]) setErrors((er) => ({ ...er, [key]: undefined }));
+      // Editing again after a failed send — reset to a clean state.
+      if (status !== "idle") {
+        setStatus("idle");
+        setErrorText(null);
+      }
     };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sendingRef.current) return; // duplicate-submit guard
     const errs = validate(values);
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
+    sendingRef.current = true;
     setStatus("sending");
-    const result = await submitEnquiry(values);
+    setErrorText(null);
+
+    const turnstile = getTurnstile();
+    let token = tokenRef.current;
+    if (TURNSTILE_SITE_KEY && turnstile && !token) {
+      try {
+        token = turnstile.getResponse() ?? "";
+      } catch {
+        token = "";
+      }
+    }
+
+    const result = await submitEnquiry(values, token, honeypot);
+    sendingRef.current = false;
+
     if (result.ok) {
       setStatus("success");
       setValues(EMPTY);
+      if (turnstile) {
+        try {
+          turnstile.reset();
+        } catch {
+          // ignore — token just expires naturally
+        }
+        tokenRef.current = "";
+      }
     } else {
+      setErrorText(apiErrorMessage(result.error ?? "internal"));
       setStatus("error");
     }
   };
@@ -358,18 +494,16 @@ export function CtContact() {
                         <polyline points="2.5 8.5 6 12 13.5 4" />
                       </svg>
                     </span>
-                    Enquiry prepared — WhatsApp has opened with your details.
+                    Enquiry sent — thank you!
                   </p>
                   <p className="mt-2 text-sm text-ink-2">
-                    Just press send in WhatsApp and our team will get back to
-                    you. Prefer email?{" "}
-                    <a
-                      className="font-semibold text-cyan underline-offset-2 hover:underline"
-                      href={`mailto:${contact.emailPrimary}`}
-                    >
-                      Email us instead
-                    </a>
-                    .
+                    Your details have been emailed to our team and a
+                    confirmation is on its way to{" "}
+                    <span className="font-semibold text-navy-900">
+                      {values.email}
+                    </span>
+                    . We will reply with questions or a quotation, usually
+                    within one business day.
                   </p>
                 </div>
               )}
@@ -379,28 +513,33 @@ export function CtContact() {
                   className="mt-6 rounded-xl border border-magenta/30 bg-magenta/5 p-5"
                 >
                   <p className="text-sm font-bold text-navy-900">
-                    We couldn&apos;t open WhatsApp automatically.
+                    {errorText ?? "We could not send your enquiry."}
                   </p>
                   <p className="mt-1.5 text-sm text-ink-2">
-                    Your browser may have blocked the popup.{" "}
+                    Prefer to chat?{" "}
                     <a
                       className="font-semibold text-cyan underline-offset-2 hover:underline"
                       href={waFallback}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Open WhatsApp manually
+                      Send the same details on WhatsApp
                     </a>{" "}
                     or{" "}
                     <a
                       className="font-semibold text-cyan underline-offset-2 hover:underline"
                       href={`mailto:${contact.emailPrimary}`}
                     >
-                      send us an email
-                    </a>{" "}
-                    instead.
+                      email us directly
+                    </a>
+                    .
                   </p>
                 </div>
+              )}
+              {widgetError && (
+                <p role="alert" className="mt-5 text-xs font-medium text-magenta">
+                  {widgetError} You can still use the WhatsApp link below.
+                </p>
               )}
 
               <form
@@ -408,6 +547,18 @@ export function CtContact() {
                 noValidate
                 className={`mt-7 grid gap-5 sm:grid-cols-2 ${status === "success" ? "hidden" : ""}`}
               >
+                {/* Honeypot — invisible to humans, irresistible to bots */}
+                <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden opacity-0">
+                  <label htmlFor="ct-website">Website</label>
+                  <input
+                    id="ct-website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                  />
+                </div>
                 {/* Full Name */}
                 <div>
                   <label htmlFor="ct-name" className="label text-ink-2">
@@ -600,19 +751,31 @@ export function CtContact() {
                     disabled={status === "sending"}
                     className="btn group btn-primary whitespace-nowrap px-8 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {status === "sending" ? "PREPARING…" : "SEND ENQUIRY"}
-                    <svg
-                      className="transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden
-                    >
-                      <path d="M2 8h11M9 4l4 4-4 4" />
-                    </svg>
+                    {status === "sending" ? (
+                      <>
+                        <svg className="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
+                          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+                          <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                        </svg>
+                        SENDING…
+                      </>
+                    ) : (
+                      "SEND ENQUIRY"
+                    )}
+                    {status !== "sending" && (
+                      <svg
+                        className="transition-transform duration-300 ease-[var(--ease-out-expo)] group-hover:translate-x-1"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <path d="M2 8h11M9 4l4 4-4 4" />
+                      </svg>
+                    )}
                   </button>
 
                   <p className="text-sm text-ink-2">
@@ -628,6 +791,13 @@ export function CtContact() {
                     directly.
                   </p>
                 </div>
+
+                {/* Cloudflare Turnstile — anti-spam verification */}
+                {TURNSTILE_SITE_KEY && (
+                  <div className="mt-1 flex min-h-[65px] items-start sm:col-span-2">
+                    <div ref={tsHostRef} className="cf-turnstile-wrap" />
+                  </div>
+                )}
 
                 {/* Privacy note */}
                 <p className="text-xs leading-relaxed text-ink-3 sm:col-span-2">

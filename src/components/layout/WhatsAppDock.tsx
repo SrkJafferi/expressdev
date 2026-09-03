@@ -29,6 +29,7 @@ function ArrowUpIcon({ className }: { className?: string }) {
  */
 export function WhatsAppDock() {
   const [visible, setVisible] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const reduced = useReducedMotion();
 
   useEffect(() => {
@@ -36,6 +37,13 @@ export function WhatsAppDock() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // The mobile drawer covers the page — the dock must not float over it.
+  useEffect(() => {
+    const onMenu = (e: Event) => setMenuOpen(Boolean((e as CustomEvent<boolean>).detail));
+    window.addEventListener("ea:mobile-menu", onMenu);
+    return () => window.removeEventListener("ea:mobile-menu", onMenu);
   }, []);
 
   const scrollToTop = () => {
@@ -47,13 +55,13 @@ export function WhatsAppDock() {
 
   return (
     <AnimatePresence>
-      {visible && (
+      {visible && !menuOpen && (
         <motion.div
           initial={reduced ? { opacity: 1 } : { opacity: 0, y: 16, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={reduced ? { opacity: 1 } : { opacity: 0, y: 16, scale: 0.95 }}
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2.5 sm:bottom-6 sm:right-6"
+          className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-2.5 pb-[env(safe-area-inset-bottom)] sm:bottom-6 sm:right-6"
         >
           {/* Scroll to Top Floating Button */}
           <button
@@ -78,7 +86,7 @@ export function WhatsAppDock() {
             href={whatsappUrl()}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex h-12 items-center gap-2.5 rounded-full bg-[#128c7e] px-4.5 text-white shadow-[0_14px_36px_-14px_rgba(18,140,126,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0e6f64] hover:shadow-[0_18px_40px_-12px_rgba(18,140,126,0.9)]"
+            className="group flex h-11 items-center gap-2 rounded-full bg-[#128c7e] px-4 text-white shadow-[0_14px_36px_-14px_rgba(18,140,126,0.75)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0e6f64] hover:shadow-[0_18px_40px_-12px_rgba(18,140,126,0.9)] sm:h-12 sm:px-4.5"
           >
             <WhatsAppIcon className="size-5" />
             <span className="label hidden sm:inline text-[11px] tracking-wider text-white">WhatsApp Quote</span>

@@ -185,7 +185,7 @@ export function GoogleReviews() {
   return (
     <section className="bg-[#edf1f5] py-20 lg:py-28" aria-label="Google reviews">
       <div className="shell">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-10">
           {/* ── LEFT — editorial column ────────────────────────────── */}
           <div className="lg:col-span-4">
             <p className="flex items-center gap-2.5">

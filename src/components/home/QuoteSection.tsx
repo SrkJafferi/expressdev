@@ -1,28 +1,81 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { services } from "@/data/services";
 import { contact, site } from "@/data/site";
 import { reviewSummary } from "@/data/reviews";
 import { SectionLabel } from "@/components/ui/SectionLabel";
 import { ArrowUpRight, MailIcon, PhoneIcon, WhatsAppIcon } from "@/components/ui/Icons";
-import { buildQuoteMessage, whatsappUrl } from "@/lib/whatsapp";
+import { whatsappUrl } from "@/lib/whatsapp";
 import { cn } from "@/lib/cn";
 
-const fields = [
-  { key: "details", label: "Project details", placeholder: "e.g. Illuminated shopfront sign", full: true },
-  { key: "quantity", label: "Quantity", placeholder: "e.g. 2 units", full: false },
-  { key: "size", label: "Size / dimensions", placeholder: "e.g. 3000 × 800 mm", full: false },
-  { key: "material", label: "Material / finish", placeholder: "e.g. Acrylic, matte laminate", full: false },
-  { key: "requiredDate", label: "Required date", placeholder: "e.g. 18 Sep", full: false },
-  { key: "notes", label: "Notes", placeholder: "Anything else we should know", full: true },
-  { key: "name", label: "Your name", placeholder: "Full name", full: false },
-  { key: "company", label: "Company", placeholder: "Company name", full: false },
-  { key: "phone", label: "WhatsApp number", placeholder: "+971 …", full: false },
-] as const;
+/* ── Cloudflare Turnstile ─────────────────────────────────────────────── */
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
-type FieldKey = (typeof fields)[number]["key"];
+type TurnstileWidget = {
+  render: (
+    el: HTMLElement,
+    options: {
+      sitekey: string;
+      theme?: string;
+      size?: string;
+      callback?: (token: string) => void;
+      "expired-callback"?: () => void;
+      "error-callback"?: () => void;
+    },
+  ) => string;
+  reset: (widgetId?: string) => void;
+  remove: (widgetId: string) => void;
+  getResponse: (widgetId?: string) => string;
+};
+
+function getTurnstile(): TurnstileWidget | undefined {
+  return (window as Window & { turnstile?: TurnstileWidget }).turnstile;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/* ── Field model ──────────────────────────────────────────────────────── */
+type FieldKey =
+  | "details"
+  | "quantity"
+  | "size"
+  | "material"
+  | "requiredDate"
+  | "notes"
+  | "name"
+  | "company"
+  | "email"
+  | "phone"
+  | "location"
+  | "preferredContact";
+
+type Field = {
+  key: FieldKey;
+  label: string;
+  placeholder: string;
+  full?: boolean;
+  type?: "text" | "email";
+};
+
+const fields: Field[] = [
+  { key: "details", label: "Project details", placeholder: "e.g. Illuminated shopfront sign", full: true },
+  { key: "quantity", label: "Quantity", placeholder: "e.g. 2 units" },
+  { key: "size", label: "Size / dimensions", placeholder: "e.g. 3000 × 800 mm" },
+  { key: "material", label: "Material / finish", placeholder: "e.g. Acrylic, matte laminate" },
+  { key: "requiredDate", label: "Required date", placeholder: "e.g. 18 Sep" },
+  { key: "notes", label: "Notes", placeholder: "Anything else we should know", full: true },
+  { key: "name", label: "Your name", placeholder: "Full name" },
+  { key: "company", label: "Company", placeholder: "Company name" },
+  { key: "email", label: "Email address *", placeholder: "you@company.com", type: "email" },
+  { key: "phone", label: "WhatsApp number", placeholder: "+971 …" },
+  { key: "location", label: "Project location", placeholder: "e.g. Dubai / Ajman" },
+];
+
+const CONTACT_METHODS = ["Phone", "WhatsApp", "Email"] as const;
+
+type SubmitStatus = "idle" | "sending" | "success" | "error";
 
 /* ── Tiny field icons (inline SVGs for crisp rendering) ──────────────── */
 function FieldIcon({ name }: { name: string }) {
@@ -76,10 +129,29 @@ function FieldIcon({ name }: { name: string }) {
           <rect x="3" y="2" width="10" height="12" rx="1" /><path d="M6 5h1M9 5h1M6 8h1M9 8h1M6 11h4" />
         </svg>
       );
+    case "email":
+      return (
+        <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="3.5" width="12" height="9" rx="1.5" /><path d="m3 5.5 5 3.5 5-3.5" />
+        </svg>
+      );
     case "phone":
       return (
         <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
           <path d="M3.5 1.5h3l1.5 3.5-2 1.5a8 8 0 0 0 3.5 3.5l1.5-2 3.5 1.5v3c0 .6-.4 1-1 1C5.6 13.5 2.5 10.4 2.5 2.5c0-.6.4-1 1-1z" />
+        </svg>
+      );
+    case "location":
+      return (
+        <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 1.8c-2.7 0-4.8 2.1-4.8 4.8 0 3.6 4.8 7.4 4.8 7.4s4.8-3.8 4.8-7.4c0-2.7-2.1-4.8-4.8-4.8z" />
+          <circle cx="8" cy="6.6" r="1.7" />
+        </svg>
+      );
+    case "preferredContact":
+      return (
+        <svg className={cls} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 5a1.5 1.5 0 0 1 1.5-1.5h7A1.5 1.5 0 0 1 13 5v3.5a1.5 1.5 0 0 1-1.5 1.5H7L4.6 12.4V10H4.5A1.5 1.5 0 0 1 3 8.5V5z" />
         </svg>
       );
     default:
@@ -229,11 +301,32 @@ function StatRing({ stat, index }: { stat: Stat; index: number }) {
   );
 }
 
+const inputClass =
+  "mt-2.5 block w-full min-w-0 max-w-full rounded-md border border-white/10 bg-navy-900/60 px-4 py-3 text-base text-white outline-none transition-all placeholder:text-white/25 focus:border-cyan-bright focus:ring-1 focus:ring-cyan-bright/30 sm:text-sm";
+const inputErrorClass =
+  "mt-2.5 block w-full min-w-0 max-w-full rounded-md border border-magenta/80 bg-navy-900/60 px-4 py-3 text-base text-white outline-none transition-all placeholder:text-white/25 focus:border-magenta focus:ring-1 focus:ring-magenta/40 sm:text-sm";
+
+function apiErrorMessage(code: string): string {
+  switch (code) {
+    case "captcha":
+      return "Security check could not be verified. Please complete the checkbox and try again.";
+    case "invalid":
+      return "Please review your details — one or more fields were not accepted.";
+    case "send_failed":
+      return "We could not send your request right now. Please try again in a moment, or reach us on WhatsApp.";
+    default:
+      return "Something went wrong while sending your request. Please try again, or reach us on WhatsApp.";
+  }
+}
+
 /**
  * Quotation composer — premium production-brief aesthetic.
- * Entirely client-side: it assembles a structured WhatsApp message
- * from the same helper future service pages will use.
- * No backend, no data storage in this phase.
+ *
+ * Two submission channels, both surfaced in the action row:
+ *  - WhatsApp: opens a pre-filled chat (verified fallback, unchanged).
+ *  - Email: posts to /api/quote, which validates server-side (zod),
+ *    verifies Cloudflare Turnstile and emails the brief to the team plus
+ *    a confirmation to the customer — no mailto, no client-side mail.
  */
 export function QuoteSection() {
   const [service, setService] = useState<string>(services[0]?.title ?? "");
@@ -246,14 +339,166 @@ export function QuoteSection() {
     notes: "",
     name: "",
     company: "",
+    email: "",
     phone: "",
+    location: "",
+    preferredContact: "WhatsApp",
   });
 
-  const ctx = useMemo(
-    () => ({ service, ...values }),
-    [service, values],
-  );
-  const preview = useMemo(() => buildQuoteMessage(ctx), [ctx]);
+  const [status, setStatus] = useState<SubmitStatus>("idle");
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [errorText, setErrorText] = useState<string | null>(null);
+  const [widgetError, setWidgetError] = useState<string | null>(null);
+  const [honeypot, setHoneypot] = useState("");
+
+  const sendingRef = useRef(false);
+  const tsHostRef = useRef<HTMLDivElement | null>(null);
+  const tokenRef = useRef("");
+  const emailRef = useRef<HTMLInputElement | null>(null);
+
+  const ctx = useMemo(() => ({ service, ...values }), [service, values]);
+
+  const markDirty = (key?: FieldKey) => {
+    if (status !== "idle") setStatus("idle");
+    setErrorText(null);
+    if (key === "email") setEmailError(null);
+  };
+
+  // Mount Cloudflare Turnstile once the client has rendered.
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return;
+    let disposed = false;
+    let widgetId: string | undefined;
+
+    const loadScript = () =>
+      new Promise<void>((resolve, reject) => {
+        if (getTurnstile()) {
+          resolve();
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Turnstile script failed to load"));
+        document.head.appendChild(script);
+      });
+
+    (async () => {
+      try {
+        await loadScript();
+        if (disposed || !tsHostRef.current) return;
+        const turnstile = getTurnstile();
+        if (!turnstile) return;
+        widgetId = turnstile.render(tsHostRef.current, {
+          sitekey: TURNSTILE_SITE_KEY,
+          theme: "dark",
+          callback: (token) => {
+            tokenRef.current = token;
+          },
+          "expired-callback": () => {
+            tokenRef.current = "";
+          },
+          "error-callback": () => {
+            tokenRef.current = "";
+          },
+        });
+      } catch {
+        if (!disposed) setWidgetError("Security check could not be loaded on this device.");
+      }
+    })();
+
+    return () => {
+      disposed = true;
+      if (widgetId) {
+        const turnstile = getTurnstile();
+        if (turnstile) {
+          try {
+            turnstile.remove(widgetId);
+          } catch {
+            // widget may already be gone
+          }
+        }
+      }
+    };
+  }, []);
+
+  const submitByEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (sendingRef.current) return; // duplicate-submit guard
+    setErrorText(null);
+
+    const email = values.email.trim();
+    if (!email || !EMAIL_RE.test(email)) {
+      setEmailError("Please enter a valid email address so we can reply.");
+      setStatus("error");
+      emailRef.current?.focus();
+      return;
+    }
+
+    sendingRef.current = true;
+    setStatus("sending");
+
+    const turnstile = getTurnstile();
+    let token = tokenRef.current;
+    if (TURNSTILE_SITE_KEY && turnstile && !token) {
+      try {
+        token = turnstile.getResponse() ?? "";
+      } catch {
+        token = "";
+      }
+    }
+
+    try {
+      const res = await fetch("/api/quote", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          service,
+          details: values.details,
+          quantity: values.quantity,
+          size: values.size,
+          material: values.material,
+          requiredDate: values.requiredDate,
+          notes: values.notes,
+          name: values.name,
+          company: values.company,
+          email,
+          phone: values.phone,
+          location: values.location,
+          preferredContact: values.preferredContact,
+          website: honeypot,
+          token,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { ok?: boolean; error?: string }
+        | null;
+
+      if (!res.ok || !data?.ok) {
+        setErrorText(apiErrorMessage(data?.error ?? "internal"));
+        setStatus("error");
+        return;
+      }
+
+      setStatus("success");
+      if (turnstile) {
+        try {
+          turnstile.reset();
+        } catch {
+          // ignore — token just expires naturally
+        }
+        tokenRef.current = "";
+      }
+    } catch {
+      setErrorText(apiErrorMessage("network"));
+      setStatus("error");
+    } finally {
+      sendingRef.current = false;
+    }
+  };
+
+  const waFallbackUrl = whatsappUrl(ctx);
 
   return (
     <section
@@ -305,8 +550,8 @@ export function QuoteSection() {
               </span>
 
               <p className="lede mt-6 text-white/65">
-                Pick a capability, add whatever detail you have, and send it
-                straight to our team on WhatsApp. Partial information is fine — we
+                Pick a capability, add whatever detail you have, and send it to
+                our team by email or WhatsApp. Partial information is fine — we
                 will come back with the questions that matter.
               </p>
 
@@ -403,7 +648,24 @@ export function QuoteSection() {
 
           {/* ── RIGHT PRODUCTION BRIEF PANEL ───────────────────────── */}
           <div className="flex min-w-0 flex-col lg:col-span-8">
-            <div className="quote-grid-bg relative flex h-full min-w-0 flex-col justify-between rounded-xl border border-white/[0.08] bg-navy-800/50 p-6 sm:p-8 lg:p-10">
+            <form
+              onSubmit={submitByEmail}
+              noValidate
+              className="quote-grid-bg relative flex h-full min-w-0 flex-col justify-between rounded-xl border border-white/[0.08] bg-navy-800/50 p-6 sm:p-8 lg:p-10"
+            >
+
+              {/* Honeypot — invisible to humans, irresistible to bots */}
+              <div aria-hidden="true" className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden opacity-0">
+                <label htmlFor="quote-website" className="label-wide text-[#ededed]">Website</label>
+                <input
+                  id="quote-website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
+              </div>
 
               <div>
                 {/* 01 — Capability — mobile: single-column grid so long
@@ -416,7 +678,10 @@ export function QuoteSection() {
                         key={s.slug}
                         type="button"
                         aria-pressed={service === s.title}
-                        onClick={() => setService(s.title)}
+                        onClick={() => {
+                          setService(s.title);
+                          markDirty();
+                        }}
                         className={cn(
                           "label inline-flex min-w-0 items-center gap-1.5 border px-3.5 py-2 text-left whitespace-normal [overflow-wrap:anywhere] transition-all duration-200 ease-[var(--ease-out-expo)]",
                           service === s.title
@@ -436,7 +701,7 @@ export function QuoteSection() {
                 {/* Separator */}
                 <hr className="my-8 border-white/[0.07]" />
 
-                {/* 02 — Project details fields */}
+                {/* 02 — Project details + contact fields */}
                 <div className="grid gap-x-6 gap-y-6 sm:grid-cols-2">
                   {fields.map((f) => (
                     <label
@@ -448,25 +713,112 @@ export function QuoteSection() {
                         {f.label}
                       </span>
                       <input
-                        type="text"
-                        inputMode={f.key === "quantity" || f.key === "size" ? "text" : undefined}
+                        ref={f.key === "email" ? emailRef : undefined}
+                        type={f.type ?? "text"}
+                        inputMode={f.type === "email" ? "email" : f.key === "quantity" || f.key === "size" ? "text" : undefined}
+                        autoComplete={f.key === "email" ? "email" : undefined}
                         value={values[f.key]}
                         placeholder={f.placeholder}
-                        onChange={(e) =>
-                          setValues((v) => ({ ...v, [f.key]: e.target.value }))
-                        }
-                        className="mt-2.5 block w-full min-w-0 max-w-full rounded-md border border-white/10 bg-navy-900/60 px-4 py-3 text-base text-white outline-none transition-all placeholder:text-white/25 focus:border-cyan-bright focus:ring-1 focus:ring-cyan-bright/30 sm:text-sm"
+                        aria-invalid={f.key === "email" && emailError ? true : undefined}
+                        aria-describedby={f.key === "email" && emailError ? "quote-email-error" : undefined}
+                        onChange={(e) => {
+                          setValues((v) => ({ ...v, [f.key]: e.target.value }));
+                          markDirty(f.key);
+                        }}
+                        className={f.key === "email" && emailError ? inputErrorClass : inputClass}
                       />
+                      {f.key === "email" && emailError && (
+                        <p id="quote-email-error" role="alert" className="mt-1.5 text-xs font-medium text-magenta">
+                          {emailError}
+                        </p>
+                      )}
                     </label>
                   ))}
+
+                  {/* Preferred contact method */}
+                  <label className="block">
+                    <span className="label-wide flex items-center gap-2 text-[#ededed]">
+                      <FieldIcon name="preferredContact" />
+                      Preferred contact method
+                    </span>
+                    <select
+                      value={values.preferredContact}
+                      onChange={(e) => {
+                        setValues((v) => ({ ...v, preferredContact: e.target.value }));
+                        markDirty("preferredContact");
+                      }}
+                      className="mt-2.5 block w-full min-w-0 max-w-full rounded-md border border-white/10 bg-navy-900/60 px-4 py-3 text-base text-white outline-none transition-all focus:border-cyan-bright focus:ring-1 focus:ring-cyan-bright/30 sm:text-sm"
+                    >
+                      {CONTACT_METHODS.map((m) => (
+                        <option key={m} value={m} className="bg-navy-900 text-white">
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                 </div>
               </div>
 
               {/* Bottom Actions — stack on mobile, row on desktop */}
               <div className="mt-10 border-t border-white/[0.07] pt-8">
+                {/* Success / error feedback */}
+                {status === "success" && (
+                  <div
+                    role="status"
+                    className="mb-6 rounded-xl border border-cyan/30 bg-cyan/10 p-5"
+                  >
+                    <p className="flex items-center gap-2.5 text-sm font-bold text-white">
+                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-cyan text-white">
+                        <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="2.5 8.5 6 12 13.5 4" />
+                        </svg>
+                      </span>
+                      Request sent — thank you!
+                    </p>
+                    <p className="mt-2 text-sm leading-relaxed text-white/70">
+                      Your brief has been emailed to our team and a confirmation
+                      is on its way to <span className="font-semibold text-cyan-bright">{values.email}</span>.
+                      We will reply with questions or a quotation, usually within
+                      one business day.
+                    </p>
+                  </div>
+                )}
+                {status === "error" && !emailError && (
+                  <div
+                    role="alert"
+                    className="mb-6 rounded-xl border border-magenta/40 bg-magenta/10 p-5"
+                  >
+                    <p className="flex items-center gap-2.5 text-sm font-bold text-white">
+                      <span className="grid size-6 shrink-0 place-items-center rounded-full bg-magenta text-white">
+                        <svg className="size-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M8 3v6M8 12.2v.8" />
+                        </svg>
+                      </span>
+                      {errorText ?? "We could not send your request."}
+                    </p>
+                    <p className="mt-2 text-sm text-white/70">
+                      Prefer to chat?{" "}
+                      <a
+                        href={waFallbackUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-cyan-bright underline-offset-2 hover:underline"
+                      >
+                        Send the same brief on WhatsApp
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
+                {widgetError && (
+                  <p role="alert" className="mb-4 text-xs font-medium text-yellow">
+                    {widgetError} You can still use WhatsApp below.
+                  </p>
+                )}
+
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <a
-                    href={whatsappUrl(ctx)}
+                    href={waFallbackUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="group inline-flex w-full items-center justify-center gap-3 rounded-full border-2 border-[#25d366] bg-[#25d366] px-8 py-3.5 text-sm font-bold tracking-wide uppercase text-white shadow-[0_4px_20px_-4px_rgba(37,211,102,0.4)] transition-all duration-200 hover:bg-[#20c05c] hover:shadow-[0_6px_24px_-4px_rgba(37,211,102,0.6)] sm:w-auto"
@@ -477,19 +829,37 @@ export function QuoteSection() {
                       <path d="M3 8h10M9 4l4 4-4 4" />
                     </svg>
                   </a>
-                  <a
-                    href={`mailto:${contact.emailPrimary}?subject=${encodeURIComponent(
-                      `Quotation request — ${service}`,
-                    )}&body=${encodeURIComponent(preview)}`}
-                    className="group inline-flex w-full items-center justify-center gap-3 rounded-full border border-white/20 px-8 py-3.5 text-sm font-bold tracking-wide uppercase text-white/70 transition-all duration-200 hover:border-white/40 hover:text-white sm:w-auto"
+                  <button
+                    type="submit"
+                    disabled={status === "sending"}
+                    className="group inline-flex w-full items-center justify-center gap-3 rounded-full border border-white/20 px-8 py-3.5 text-sm font-bold tracking-wide uppercase text-white/70 transition-all duration-200 hover:border-white/40 hover:text-white disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                   >
-                    <MailIcon className="size-4" />
-                    Send by Email
-                    <svg className="cta-arrow-icon size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <path d="M3 8h10M9 4l4 4-4 4" />
-                    </svg>
-                  </a>
+                    {status === "sending" ? (
+                      <>
+                        <svg className="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
+                          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+                          <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                        </svg>
+                        Sending…
+                      </>
+                    ) : (
+                      <>
+                        <MailIcon className="size-4" />
+                        Send by Email
+                        <svg className="cta-arrow-icon size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M3 8h10M9 4l4 4-4 4" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
                 </div>
+
+                {/* Cloudflare Turnstile — anti-spam verification */}
+                {TURNSTILE_SITE_KEY && (
+                  <div className="mt-5 flex min-h-[65px] items-start">
+                    <div ref={tsHostRef} className="cf-turnstile-wrap" />
+                  </div>
+                )}
 
                 {/* Privacy note */}
                 <p className="mt-5 flex items-center gap-2 text-xs text-white/30">
@@ -500,7 +870,7 @@ export function QuoteSection() {
                   Your information is secure and will only be used to respond to your inquiry.
                 </p>
               </div>
-            </div>
+            </form>
           </div>
 
         </div>
@@ -508,4 +878,3 @@ export function QuoteSection() {
     </section>
   );
 }
-

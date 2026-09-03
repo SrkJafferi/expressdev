@@ -161,7 +161,7 @@ export function Footer() {
                       className="group flex items-center gap-2.5 py-1.5 text-sm text-ink-2 transition-colors hover:text-navy-900"
                     >
                       {Icon && (
-                        <Icon className="size-[16px] shrink-0 text-navy-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-cyan" />
+                        <Icon className="size-[16px] shrink-0 text-navy-900 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-cyan" />
                       )}
                       <span>{item.label}</span>
                     </Link>
@@ -184,7 +184,7 @@ export function Footer() {
                       className="group flex items-center gap-2.5 py-1.5 text-sm text-ink-2 transition-colors hover:text-navy-900"
                     >
                       {Icon && (
-                        <Icon className="size-[16px] shrink-0 text-navy-300 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-cyan" />
+                        <Icon className="size-[16px] shrink-0 text-navy-900 transition-all duration-300 group-hover:translate-x-0.5 group-hover:text-cyan" />
                       )}
                       <span>{s.title}</span>
                     </Link>

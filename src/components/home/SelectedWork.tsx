@@ -19,7 +19,10 @@ const spans = [
 
 export function SelectedWork() {
   return (
-    <section id="work" className="scroll-mt-24 bg-charcoal py-20 text-white lg:py-28">
+    <section
+      id="work"
+      className="scroll-mt-24 overflow-x-clip bg-charcoal py-20 text-white lg:py-28"
+    >
       <div className="shell">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <Reveal from="up">
