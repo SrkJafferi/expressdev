@@ -133,19 +133,25 @@ const signageImageOverrides: Partial<Record<string, string>> = {
     "https://plus.unsplash.com/premium_photo-1778709603489-5052cc80ccea?w=600&auto=format&fit=crop&q=85",
   "Indoor Signs":
     "https://images.unsplash.com/photo-1695624825454-7ace45436e27?w=600&auto=format&fit=crop&q=85",
-  "Pop-Up":
-    "https://images.unsplash.com/photo-1626253274763-bdabe2f097c5?w=600&auto=format&fit=crop&q=85",
+  "Pop-Up": "/popup_converted.avif",
   "Promotional Table":
     "https://images.unsplash.com/photo-1759866614103-376bde0fc66f?w=600&auto=format&fit=crop&q=85",
-  "Roll Up":
-    "https://images.unsplash.com/photo-1652388274774-e312506edea5?w=600&auto=format&fit=crop&q=85",
+  "Roll Up": "/rollup_converted.avif",
   "SMD Screens":
     "https://plus.unsplash.com/premium_photo-1679690708684-97aa10d30a80?w=600&auto=format&fit=crop&q=85",
+};
+
+// Local owned assets dropped into /public for these two signage products.
+const signageAltOverrides: Record<string, string> = {
+  "Pop-Up": "Portable pop-up exhibition display backdrop",
+  "Roll Up": "Retractable roll-up banner stand",
 };
 
 for (const p of signage) {
   const url = signageImageOverrides[p.name];
   if (url) p.image = withSrc(p.image, url);
+  const alt = signageAltOverrides[p.name];
+  if (alt) p.imageAlt = alt;
 }
 
 const largeFormat = build("large-format", [
