@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/Icons";
 import {
   AboutIcon,
+  CareersIcon,
   ContactIcon,
   CrosshairIcon,
   GiftIcon,
@@ -41,6 +42,7 @@ const navIcons: Record<string, IconType> = {
   "/about": AboutIcon,
   "/services": GridIcon,
   "/clients": ImageIcon,
+  "/careers": CareersIcon,
   "/contact": ContactIcon,
 };
 
@@ -117,6 +119,15 @@ export function Header() {
               >
                 <WhatsAppIcon className="size-3.5" />
                 {contact.phoneDisplay}
+              </a>
+              <a
+                href="https://maps.app.goo.gl/4pH8FsqQYVMcxFCw7"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="label-wide flex items-center gap-2 text-white/70 transition-colors hover:text-white"
+              >
+                <PinIcon className="size-3.5" />
+                Visit Us
               </a>
               <a
                 href={`mailto:${contact.emailPrimary}`}

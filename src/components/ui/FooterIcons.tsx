@@ -40,6 +40,9 @@ export function ImageIcon(p: IconProps) {
 export function ContactIcon(p: IconProps) {
   return <Svg {...p}><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" /><circle cx="12" cy="10" r="2.5" /></Svg>;
 }
+export function CareersIcon(p: IconProps) {
+  return <Svg {...p}><rect x="4" y="8" width="16" height="12" rx="1.5" /><path d="M9 8V6.5A2.5 2.5 0 0 1 11.5 4h1A2.5 2.5 0 0 1 15 6.5V8M4 13h16M12 12.5v1.5" /></Svg>;
+}
 
 /* ---- Services ---- */
 export function PrinterIcon(p: IconProps) {

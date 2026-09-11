@@ -7,6 +7,7 @@ import { CmykTicks } from "@/components/ui/PrintMarks";
 import { NewsletterForm } from "@/components/layout/NewsletterForm";
 import {
   AboutIcon,
+  CareersIcon,
   ContactIcon,
   CrosshairIcon,
   FacebookIcon,
@@ -54,6 +55,7 @@ const navIcons: Record<string, IconType> = {
   "/about": AboutIcon,
   "/services": GridIcon,
   "/clients": ImageIcon,
+  "/careers": CareersIcon,
   "/contact": ContactIcon,
 };
 

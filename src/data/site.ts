@@ -36,20 +36,29 @@ export const nav = [
   { label: "About", href: "/about" },
   { label: "Services", href: "/services" },
   { label: "Clients", href: "/clients" },
+  { label: "Careers", href: "/careers" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
 /**
- * Social profiles — intentionally empty.
+ * Social profiles — only verified URLs. The footer renders nothing for a
+ * label it has no icon for, and nothing at all while this list is empty.
  *
- * No profile could be verified for the Ajman business (the "Express
- * Advertising" LinkedIn company page that ranks is a different company in
- * Egypt), and a guessed URL is worse than no URL, so the footer renders
- * nothing until real ones land here.
- *
+ * Recognised labels: LinkedIn, Instagram, Facebook, YouTube, Pinterest, TikTok.
  * Add entries and the footer picks them up with no further changes:
  *   { label: "Instagram", href: "https://www.instagram.com/…" }
- * Recognised labels: LinkedIn, Instagram, Facebook, YouTube, Pinterest, TikTok.
- * Anything else is skipped rather than rendered iconless.
  */
-export const socials: { label: string; href: string }[] = [];
+export const socials: { label: string; href: string }[] = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/expressadvertisinguae",
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/expressaduae/",
+  },
+  {
+    label: "TikTok",
+    href: "https://www.tiktok.com/@expressaduae",
+  },
+];

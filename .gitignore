@@ -10,3 +10,7 @@ npm-debug.log*
 !.env.example
 next-env.d.ts
 tsconfig.tsbuildinfo
+
+# Local agent/tooling state — not part of the app
+.workbuddy-ai
+.freebuff
