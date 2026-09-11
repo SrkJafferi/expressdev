@@ -77,8 +77,8 @@ export function CareersIntro() {
               <div className="overflow-hidden rounded-2xl border border-rule/70 bg-white shadow-[0_24px_60px_-24px_rgba(16,48,90,0.35)]">
                 <div className="relative aspect-[4/3]">
                   <Image
-                    src={media.design.src}
-                    alt={media.design.alt}
+                    src={media.careersTeam.src}
+                    alt={media.careersTeam.alt}
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className="object-cover"
@@ -95,8 +95,8 @@ export function CareersIntro() {
               </span>
 
               <figcaption className="body-sm mt-3 text-ink-3">
-                Creative, production and client teams working from the same
-                brief.
+                Focused work, finished properly — one team across every
+                discipline.
               </figcaption>
             </figure>
           </Reveal>

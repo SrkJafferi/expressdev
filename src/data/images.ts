@@ -17,6 +17,10 @@ export type Media = {
 const u = (id: string, w = 1600) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
 
+/** Unsplash+ (premium) library — same idea as `u()`, different CDN host. */
+const up = (id: string, w = 1200) =>
+  `https://plus.unsplash.com/premium_photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
+
 export const media = {
   heroPrimary: {
     src: u("1693031630369-bd429a57f115", 1800),
@@ -120,6 +124,11 @@ export const media = {
   design: {
     src: u("1626785774573-4b799315345d", 1200),
     alt: "Designer working through brand artwork on a calibrated setup",
+    placeholder: true,
+  },
+  careersTeam: {
+    src: up("1661266819853-ac00dcaf21d2", 1200),
+    alt: "Team member celebrating a finished result at a dual-monitor design workstation",
     placeholder: true,
   },
   it: {
