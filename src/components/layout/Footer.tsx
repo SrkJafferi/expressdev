@@ -128,7 +128,7 @@ export function Footer() {
             <CmykTicks className="mt-7 h-1 w-20" />
 
             {socials.length > 0 && (
-              <ul className="mt-7 flex flex-wrap gap-2.5">
+              <ul className="-ml-2.5 mt-7 flex flex-wrap gap-0.5">
                 {socials.map((s) => {
                   const Icon = socialIcons[s.label];
                   if (!Icon) return null;
@@ -139,9 +139,9 @@ export function Footer() {
                         target="_blank"
                         rel="noopener noreferrer"
                         aria-label={s.label}
-                        className="grid size-9 place-items-center rounded-full border border-navy-300/60 bg-white/60 text-navy/80 shadow-xs backdrop-blur-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan hover:bg-cyan hover:text-white hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/60"
+                        className="grid size-11 place-items-center text-navy/80 transition-all duration-200 hover:-translate-y-0.5 hover:text-cyan focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/60"
                       >
-                        <Icon className="size-4" />
+                        <Icon className="size-6" />
                       </a>
                     </li>
                   );
