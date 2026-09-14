@@ -111,9 +111,8 @@ export const lfSolutions: LfSolution[] = [
     description:
       "Rigid printed display solutions including suitable board-based applications for retail, exhibitions, presentations and temporary signage.",
     icon: "board",
-    image:
-      "https://images.unsplash.com/photo-1648098893250-1d03dce92467?w=600&auto=format&fit=crop&q=85",
-    imageAlt: "Rigid forex board display print",
+    image: "/forexboard.png",
+    imageAlt: "Rigid forex board display print in a lobby interior",
   },
 ];
 

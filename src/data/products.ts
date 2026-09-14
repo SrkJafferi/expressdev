@@ -182,8 +182,7 @@ const largeFormatImageOverrides: Partial<Record<string, string>> = {
     "https://images.unsplash.com/photo-1693031630146-568e2f72db0e?w=600&auto=format&fit=crop&q=85",
   "One Way Vision":
     "https://plus.unsplash.com/premium_photo-1677658295348-7cad7276ffb2?w=600&auto=format&fit=crop&q=85",
-  "Forex Board":
-    "https://images.unsplash.com/photo-1648098893250-1d03dce92467?w=600&auto=format&fit=crop&q=85",
+  "Forex Board": "/forexboard.png",
   "Plotter Cutting Sticker":
     "https://images.unsplash.com/photo-1691052709911-7744a278aa37?w=600&auto=format&fit=crop&q=85",
   Poster:
@@ -194,9 +193,17 @@ const largeFormatImageOverrides: Partial<Record<string, string>> = {
     "https://images.unsplash.com/photo-1664289192124-f0d784151d11?w=600&auto=format&fit=crop&q=85",
 };
 
+// Owned assets dropped into /public need their own alt text — the category
+// fallback alt describes the generic media key, not the actual photograph.
+const largeFormatAltOverrides: Partial<Record<string, string>> = {
+  "Forex Board": "Rigid forex board print on display in a lobby interior",
+};
+
 for (const p of largeFormat) {
   const url = largeFormatImageOverrides[p.name];
   if (url) p.image = withSrc(p.image, url);
+  const alt = largeFormatAltOverrides[p.name];
+  if (alt) p.imageAlt = alt;
 }
 
 const promotional = build("promotional", [
